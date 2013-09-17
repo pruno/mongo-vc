@@ -1,0 +1,17 @@
+language: php
+
+php:
+  - 5.4
+  - 5.5
+
+services: mongodb
+
+before_install:
+ - cp tests/TestConfig.php.travis tests/TestConfig.php
+ - composer install
+
+script:
+ - vendor/phpunit/phpunit/phpunit.php -c $PWD/tests/phpunit.xml
+
+notifications:
+  email: false
