@@ -20,7 +20,7 @@ class Bootstrap
         if (is_readable(__DIR__ . '/TestConfig.php')) {
             $testConfig = include __DIR__ . '/testConfig.php';
         } else {
-            $testConfig = include __DIR__ . '/_testConfig.php.dist';
+            $testConfig = include __DIR__ . '/testConfig.php.dist';
         }
 
         $zf2ModulePaths = array();
