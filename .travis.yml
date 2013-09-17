@@ -7,11 +7,11 @@ php:
 services: mongodb
 
 before_install:
- - cp tests/TestConfig.php.travis tests/TestConfig.php
- - composer install
+ - cp test/TestConfig.php.travis test/TestConfig.php
+ - composer install --dev --no-interaction --prefer-source --quiet
 
 script:
- - vendor/phpunit/phpunit/phpunit.php -c $PWD/tests/phpunit.xml
+ - ./vendor/bin/phpunit -c $PWD/test/phpunit.xml
 
 notifications:
-  email: false
+  email: fals e
