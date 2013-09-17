@@ -1,0 +1,18 @@
+language: php
+
+php:
+  - 5.4
+  - 5.5
+
+services: mongodb
+
+before_install:
+ - echo "extension = mongo.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+ - cp test/testConfig.php.travis test/testConfig.php
+ - composer install
+
+script:
+ - ./vendor/bin/phpunit -c $PWD/test/phpunit.xml
+
+notifications:
+  email: false
