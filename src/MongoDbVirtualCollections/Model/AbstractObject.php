@@ -197,7 +197,11 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
      */
     public function toArray()
     {
-        return $this->data;
+        $data = $this->data;
+        if (isset($data[$this->getCollection()->getPrimaryFieldName()])) {
+            $data[$this->getCollection()->getPrimaryFieldName()] = (string) $data[$this->getCollection()->getPrimaryFieldName()];
+        }
+        return $data;
     }
 
     /**
