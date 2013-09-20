@@ -30,6 +30,14 @@ abstract class AbstractSupportCollection extends AbstractCollection
     }
 
     /**
+     * @throws \Exception
+     */
+    final public function getAssetSchema()
+    {
+        throw new \Exception("Support collections should never define their own asset schema");
+    }
+
+    /**
      * @param string|\MongoId $identifier
      * @return null|object
      * @throws \Exception
