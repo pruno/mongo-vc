@@ -100,8 +100,8 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
     {
         if ($this->objectExistsInDatabase()) {
             $this->getCollection()->update(
-                $this->data,
-                $this->getPrimaryCriteria()
+                $this->getPrimaryCriteria(),
+                $this->data
             );
         } else {
             $this->data['_id'] = $this->getCollection()->createIdentifier();
