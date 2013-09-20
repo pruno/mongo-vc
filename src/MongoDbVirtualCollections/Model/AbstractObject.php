@@ -48,7 +48,10 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
     /**
      * @return array
      */
-    abstract protected function getAssetSchema();
+    protected function getAssetSchema()
+    {
+        return $this->getCollection()->getAssetSchema();
+    }
 
     protected function initialize()
     {

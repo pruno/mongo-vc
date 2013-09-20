@@ -10,15 +10,5 @@ use MongoDbVirtualCollections\Model\AbstractObject;
  */
 class Bar extends AbstractObject
 {
-    /**
-     * @return array
-     */
-    public function getAssetSchema()
-    {
-        return array(
-            'bar1',
-            'bar2',
-            'bar3'
-        );
-    }
+
 }

@@ -78,6 +78,11 @@ abstract class AbstractCollection implements ServiceLocatorAwareInterface
     }
 
     /**
+     * @return array
+     */
+    abstract public function getAssetSchema();
+
+    /**
      * @return HydratorInterface
      */
     protected function getHydrator()
