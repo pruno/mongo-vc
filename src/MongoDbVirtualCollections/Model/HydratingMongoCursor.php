@@ -91,7 +91,7 @@ class HydratingMongoCursor implements Countable, Iterator
             return $result;
         }
 
-        return $this->hydrator->hydrate($result, clone $this->prototype);
+        return $this->hydrator->hydrate($result, clone $this->getPrototype());
     }
 
     /**

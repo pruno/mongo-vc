@@ -213,6 +213,33 @@ abstract class AbstractCollectionTest extends AbstractTestCase
 
     /**
      * @depends testInsert
+     */
+    public function testSelectOne()
+    {
+        $this->dummyInsert();
+
+        $this->getCollection()->insert(array(
+            'bar' => 'foo'
+        ));
+
+        $this->assertTrue(
+            $this->getCollection()->selectOne(array()) instanceof AbstractObject,
+            '->selectOne() should return an instance of AbstractObject'
+        );
+
+        $this->assertTrue(
+            $this->getCollection()->selectOne(array('bar' => 'foo')) instanceof AbstractObject,
+            '->selectOne() should return an instance of AbstractObject'
+        );
+
+        $this->assertNull(
+            $this->getCollection()->selectOne(array('nonExistingField' => 1)),
+            '->selectOne() should return an instance of AbstractObject'
+        );
+    }
+
+    /**
+     * @depends testInsert
      * @depends testCount
      */
     public function testUpdate()

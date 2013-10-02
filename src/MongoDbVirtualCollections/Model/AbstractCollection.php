@@ -182,6 +182,23 @@ abstract class AbstractCollection implements ServiceLocatorAwareInterface
     }
 
     /**
+     * @param array $criteria
+     * @return AbstractObject|null
+     */
+    public function selectOne(array $criteria = array())
+    {
+        $raw = $this->selectRawData($criteria);
+        if (!$raw->count()) {
+            return null;
+        }
+
+        $object = clone $this->getObjectPrototype();
+        $this->getHydrator()->hydrate($raw->current(), $object);
+
+        return $object;
+    }
+
+    /**
      * @param array $set
      * @return array|bool
      */
