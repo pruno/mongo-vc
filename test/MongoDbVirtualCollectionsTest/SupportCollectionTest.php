@@ -35,6 +35,18 @@ class SupportCollectionTest extends AbstractCollectionTest
         $this->fail("Support collection should throw an exception while creating objects");
     }
 
+    public function testSelectOne()
+    {
+        try {
+            parent::testSelectOne();
+        } catch (\Exception $e) {
+            $this->assertTrue(true);
+            return;
+        }
+
+        $this->fail("Support collection should throw an exception while creating objects");
+    }
+
     public function testHydratingMongoCursor()
     {
         try {
