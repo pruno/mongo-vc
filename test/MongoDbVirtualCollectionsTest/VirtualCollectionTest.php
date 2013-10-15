@@ -232,23 +232,23 @@ class VirtualCollectionTest extends AbstractCollectionTest
 
         // Test whitout primary field casting
         $this->assertTrue(
-            $this->getSupportCollection()->get($idFoo) instanceof Foo,
+            $this->getSupportCollection()->getById($idFoo) instanceof Foo,
             "get() should return an instance of Foo"
         );
 
         $this->assertTrue(
-            $this->getSupportCollection()->get($idBar) instanceof Bar,
+            $this->getSupportCollection()->getById($idBar) instanceof Bar,
             "get() should return an instance of Bar"
         );
 
         // primary field casting is demanded to the model
         $this->assertTrue(
-            $this->getSupportCollection()->get((string) $idFoo) instanceof Foo,
+            $this->getSupportCollection()->getById((string) $idFoo) instanceof Foo,
             "get() should return an instance of Foo"
         );
 
         $this->assertTrue(
-            $this->getSupportCollection()->get((string) $idBar) instanceof Bar,
+            $this->getSupportCollection()->getById((string) $idBar) instanceof Bar,
             "get() should return an instance of Bar"
         );
     }

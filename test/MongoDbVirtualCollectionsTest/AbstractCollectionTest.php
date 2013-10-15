@@ -337,4 +337,21 @@ abstract class AbstractCollectionTest extends AbstractTestCase
             'Unexpected hydrating cursor count() value'
         );
     }
+
+    /**
+     * @depends testInsert
+     * @depends testSelectRawData
+     */
+    public function testGetById()
+    {
+        $this->dummyInsert();
+
+        $data = $this->getCollection()->selectRawData(array())->current();
+
+        $object = $this->getCollection()->getById((string) $data['_id']);
+
+        $this->assertTrue($object instanceof AbstractObject, 'getById() should return an instance of MongoDbVirtualCollections\Model\AbstractObject');
+
+        $this->assertEquals((string) $data['_id'], $object->offsetGet('_id'), "_id field does not match with the requested one");
+    }
 }

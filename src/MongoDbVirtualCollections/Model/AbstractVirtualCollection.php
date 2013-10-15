@@ -187,17 +187,4 @@ abstract class AbstractVirtualCollection extends AbstractCollection
             $options
         );
     }
-
-    /**
-     * @param string|\MongoId $id
-     * @return AbstractObject|null
-     */
-    public function getById($id)
-    {
-        return $this->getSupportCollection()->selectOne(
-            $this->prepareCriteria(array(
-                $this->getSupportCollection()->getPrimaryFieldName() => $id
-            ))
-        );
-    }
 }
