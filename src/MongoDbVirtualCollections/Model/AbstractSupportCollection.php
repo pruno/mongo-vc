@@ -38,14 +38,24 @@ abstract class AbstractSupportCollection extends AbstractCollection
     }
 
     /**
-     * @param string|\MongoId $identifier
+     * @param string|\MongoId $id
+     * @return AbstractObject|null
+     * @deprecated Use getById
+     */
+    public function get($id)
+    {
+        return $this->getById($id);
+    }
+
+    /**
+     * @param string|\MongoId $id
      * @return null|object
      * @throws \Exception
      */
-    public function get($identifier)
+    public function getById($id)
     {
         $raw = $this->selectRawData(
-            array($this->getPrimaryFieldName() => ($identifier instanceof \MongoId) ? $identifier : $this->createIdentifier($identifier)),
+            array($this->getPrimaryFieldName() => ($id instanceof \MongoId) ? $id : $this->createIdentifier($id)),
             null,
             1
         )->current();
