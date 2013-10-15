@@ -259,4 +259,15 @@ abstract class AbstractCollection implements ServiceLocatorAwareInterface
 
         return $this->objectPrototype;
     }
+
+    /**
+     * @param string|\MongoId $id
+     * @return AbstractObject|null
+     */
+    public function getById($id)
+    {
+        return $this->selectOne(array(
+            $this->getPrimaryFieldName() => $id
+        ));
+    }
 }
