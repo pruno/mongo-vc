@@ -267,11 +267,11 @@ abstract class AbstractCollectionTest extends AbstractTestCase
      * @depends testInsert
      * @depends testCount
      */
-    public function testDelete()
+    public function testRemove()
     {
         $this->dummyInsert();
 
-        $this->getCollection()->delete();
+        $this->getCollection()->remove();
 
         $this->assertEquals(
             $this->getCollection()->count(),
@@ -281,7 +281,7 @@ abstract class AbstractCollectionTest extends AbstractTestCase
 
         $this->dummyInsert();
 
-        $this->getCollection()->delete(array(
+        $this->getCollection()->remove(array(
             'foo' => 'bar'
         ));
 
@@ -293,7 +293,7 @@ abstract class AbstractCollectionTest extends AbstractTestCase
 
         $this->dummyInsert();
 
-        $this->getCollection()->delete(array(
+        $this->getCollection()->remove(array(
             'bar' => 'foo'
         ));
 

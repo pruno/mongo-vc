@@ -194,7 +194,7 @@ class VirtualCollectionTest extends AbstractCollectionTest
         $this->dummyInsert();
         $this->dummySecondaryInsert();
 
-        $this->getCollection()->delete();
+        $this->getCollection()->remove();
 
         $this->assertEquals(
             $this->getCollection()->count(),
@@ -214,9 +214,6 @@ class VirtualCollectionTest extends AbstractCollectionTest
      */
     public function testAgnosticGetById()
     {
-        $this->getServiceLocator()->addAbstractFactory(new CollectionAbstractFactory());
-        $this->getServiceLocator()->addAbstractFactory(new VirtualCollectionAbstractFactory());
-
         $idFoo = new \MongoId();
         $idBar = new \MongoId();
 

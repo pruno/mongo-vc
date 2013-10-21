@@ -210,7 +210,7 @@ abstract class AbstractCollection
      * @param array $options
      * @return mixed
      */
-    public function delete(array $criteria = array(), array $options = array())
+    public function remove(array $criteria = array(), array $options = array())
     {
         return $this->collection->remove(
             $this->prepareCriteria($criteria),
@@ -232,7 +232,7 @@ abstract class AbstractCollection
             $this->objectPrototype = $this->createObjectPrototype();
         }
 
-        return $this->objectPrototype;
+        return clone $this->objectPrototype;
     }
 
     /**
