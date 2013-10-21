@@ -155,7 +155,7 @@ abstract class AbstractCollectionTest extends AbstractTestCase
     /**
      * @depends testInsert
      */
-    public function testSelectRawData()
+    public function testFindRaw()
     {
         $this->dummyInsert();
 
@@ -163,6 +163,11 @@ abstract class AbstractCollectionTest extends AbstractTestCase
         $this->assertTrue(
             is_array($data) && $data,
             'selectRawData()->current() should return a non-empty array'
+        );
+
+        $this->assertTrue(
+            $data['_id'] instanceof \MongoId,
+            "findRaw() data result '_id' index should be an instance of \\MongoId"
         );
 
         $data = $this->getCollection()->findRaw(array(
@@ -187,20 +192,27 @@ abstract class AbstractCollectionTest extends AbstractTestCase
     /**
      * @depends testInsert
      */
-    public function testSelect()
+    public function testFind()
     {
         $this->dummyInsert();
 
+        $object = $this->getCollection()->find()->current();
+
         $this->assertTrue(
-            $this->getCollection()->find()->current() instanceof AbstractObject,
+            $object instanceof AbstractObject,
             '->select()->current() should return an instance of AbstractObject'
+        );
+
+        $this->assertString(
+            $object->_id,
+            "Object _id property should be a string"
         );
     }
 
     /**
      * @depends testInsert
      */
-    public function testSelectOne()
+    public function testFindOne()
     {
         $this->dummyInsert();
 
@@ -326,7 +338,7 @@ abstract class AbstractCollectionTest extends AbstractTestCase
 
     /**
      * @depends testInsert
-     * @depends testSelectRawData
+     * @depends testFindRaw
      */
     public function testGetById()
     {

@@ -26,10 +26,10 @@ class SupportCollectionTest extends AbstractCollectionTest
         $this->fail("Support collection should throw an exception while creating objects");
     }
 
-    public function testSelect()
+    public function testFind()
     {
         try {
-            parent::testSelect();
+            parent::testFind();
         } catch (\Exception $e) {
             $this->assertTrue(true);
             return;
@@ -38,10 +38,10 @@ class SupportCollectionTest extends AbstractCollectionTest
         $this->fail("Support collection should throw an exception while creating objects");
     }
 
-    public function testSelectOne()
+    public function testFindOne()
     {
         try {
-            parent::testSelectOne();
+            parent::testFindOne();
         } catch (\Exception $e) {
             $this->assertTrue(true);
             return;
@@ -69,9 +69,9 @@ class SupportCollectionTest extends AbstractCollectionTest
     }
 
     // Otherwise @depends tag will fail
-    public function testSelectRawData()
+    public function testFindRaw()
     {
-        parent::testSelectRawData();
+        parent::testFindRaw();
     }
 
     public function testGetById()

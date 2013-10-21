@@ -112,7 +112,7 @@ class VirtualCollectionTest extends AbstractCollectionTest
     /**
      * @depends testInsert
      */
-    public function testHybridSelect()
+    public function testHybridFind()
     {
         $this->dummyInsert();
         $this->dummySecondaryInsert();
@@ -212,7 +212,7 @@ class VirtualCollectionTest extends AbstractCollectionTest
     /**
      * @depends testInsert
      */
-    public function testAgnosticGet()
+    public function testAgnosticGetById()
     {
         $this->getServiceLocator()->addAbstractFactory(new CollectionAbstractFactory());
         $this->getServiceLocator()->addAbstractFactory(new VirtualCollectionAbstractFactory());
