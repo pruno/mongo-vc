@@ -57,7 +57,7 @@ class CollectionAbstractFactory implements AbstractFactoryInterface
 
         $className = "\\{$requestedName}";
 
-        return new $className($serviceLocator, $mongoDb);
+        return new $className($mongoDb);
     }
 
     /**

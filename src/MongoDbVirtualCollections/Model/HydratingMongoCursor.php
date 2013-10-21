@@ -33,7 +33,7 @@ class HydratingMongoCursor implements Countable, Iterator
      * @param MongoCursor $cursor
      * @param HydratorInterface $hydrator
      * @param AbstractObject $prototype
-     * @throw InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function __construct(MongoCursor $cursor, HydratorInterface $hydrator, AbstractObject $prototype)
     {

@@ -10,5 +10,9 @@ use MongoDbVirtualCollections\Model\AbstractObject;
  */
 class Bar extends AbstractObject
 {
+    public $bar1;
 
+    public $bar2;
+
+    public $bar3;
 }

@@ -14,19 +14,17 @@ use Zend\Stdlib\Hydrator\HydratorInterface;
  * Class AbstractCollection
  * @package MongoDbVirtualCollectionsTest\Model
  */
-abstract class AbstractCollection implements ServiceLocatorAwareInterface
+abstract class AbstractCollection
 {
-    use ServiceLocatorAwareTrait;
+    /**
+     * @var \MongoCollection
+     */
+    protected $collection;
 
     /**
      * @var string
      */
-    const PRIMARY_FIELD_NAME = '_id';
-
-    /**
-     * @var \MongoCollection
-     */
-    protected $mongoCollection;
+    protected $collectionName;
 
     /**
      * @var AbstractObject
@@ -39,56 +37,36 @@ abstract class AbstractCollection implements ServiceLocatorAwareInterface
     protected $hydrator;
 
     /**
-     * @param ServiceLocatorInterface $serviceLocator
      * @param \MongoDB $mongoDb
      */
-    public function __construct(ServiceLocatorInterface $serviceLocator, \MongoDB $mongoDb)
+    public function __construct(\MongoDB $mongoDb)
     {
-        $this->setServiceLocator($serviceLocator);
-        $this->mongoCollection = $mongoDb->selectCollection($this->getCollectionName());
+        $this->collection = $mongoDb->selectCollection($this->collectionName);
     }
 
     /**
      * @return string
      */
-    abstract public function getCollectionName();
+    public function getCollectionName()
+    {
+        return $this->collection->getName();
+    }
 
     /**
      * @return \MongoCollection
      */
     public function getCollection()
     {
-        return $this->mongoCollection;
+        return $this->collection;
     }
 
     /**
-     * @return string
-     */
-    public function getPrimaryFieldName()
-    {
-        return static::PRIMARY_FIELD_NAME;
-    }
-
-    /**
-     * @return ArraySerializable
-     */
-    protected function getHydratorDefinition()
-    {
-        return new ArraySerializable();
-    }
-
-    /**
-     * @return array
-     */
-    abstract public function getAssetSchema();
-
-    /**
-     * @return HydratorInterface
+     * @return HydratorInterface|null
      */
     protected function getHydrator()
     {
         if ($this->hydrator === null) {
-            $this->hydrator = $this->getHydratorDefinition();
+            $this->hydrator = new ArraySerializable();
         }
 
         return $this->hydrator;
@@ -103,7 +81,7 @@ abstract class AbstractCollection implements ServiceLocatorAwareInterface
         return new HydratingMongoCursor(
             $cursor,
             $this->getHydrator(),
-            $this->getObjectPrototype()
+            $this->createObject()
         );
     }
 
@@ -123,10 +101,10 @@ abstract class AbstractCollection implements ServiceLocatorAwareInterface
     protected function prepareCriteria(array $criteria)
     {
         if (
-            array_key_exists($this->getPrimaryFieldName(), $criteria)
-            && !($criteria[$this->getPrimaryFieldName()] instanceof \MongoId)
+            array_key_exists('_id', $criteria)
+            && !($criteria['_id'] instanceof \MongoId)
         ) {
-            $criteria[$this->getPrimaryFieldName()] = $this->createIdentifier($criteria[$this->getPrimaryFieldName()]);
+            $criteria['_id'] = $this->createIdentifier($criteria['_id']);
         }
 
         return $criteria;
@@ -138,7 +116,7 @@ abstract class AbstractCollection implements ServiceLocatorAwareInterface
      */
     public function count(array $criteria = array())
     {
-        return $this->getCollection()->count(
+        return $this->collection->count(
             $this->prepareCriteria($criteria)
         );
     }
@@ -149,9 +127,9 @@ abstract class AbstractCollection implements ServiceLocatorAwareInterface
      * @param null $limit
      * @return \MongoCursor
      */
-    public function selectRawData(array $criteria = array(), array $sort = null, $limit = null)
+    public function findRaw(array $criteria = array(), array $sort = null, $limit = null)
     {
-        $cursor = $this->getCollection()->find(
+        $cursor = $this->collection->find(
             $this->prepareCriteria($criteria)
         );
 
@@ -174,10 +152,10 @@ abstract class AbstractCollection implements ServiceLocatorAwareInterface
      * @param null $limit
      * @return HydratingMongoCursor
      */
-    public function select(array $criteria = array(), array $sort = null, $limit = null)
+    public function find(array $criteria = array(), array $sort = null, $limit = null)
     {
         return $this->getHydratingMongoCursor(
-            $this->selectRawData($criteria, $sort, $limit)
+            $this->findRaw($criteria, $sort, $limit)
         );
     }
 
@@ -185,15 +163,20 @@ abstract class AbstractCollection implements ServiceLocatorAwareInterface
      * @param array $criteria
      * @return AbstractObject|null
      */
-    public function selectOne(array $criteria = array())
+    public function findOne(array $criteria = array())
     {
-        $raw = $this->selectRawData($criteria);
-        if (!$raw->count()) {
+        $raw = $this->collection->findOne(
+            $this->prepareCriteria($criteria)
+        );
+
+        if (!$raw) {
             return null;
         }
 
-        $object = clone $this->getObjectPrototype();
-        $this->getHydrator()->hydrate($raw->current(), $object);
+        $raw['_id'] = (string) $raw['_id'];
+
+        $object = $this->createObject();
+        $this->getHydrator()->hydrate($raw, $object);
 
         return $object;
     }
@@ -204,7 +187,7 @@ abstract class AbstractCollection implements ServiceLocatorAwareInterface
      */
     public function insert(array $set)
     {
-        return $this->getCollection()->insert($set);
+        return $this->collection->insert($set);
     }
 
     /**
@@ -215,10 +198,10 @@ abstract class AbstractCollection implements ServiceLocatorAwareInterface
      */
     public function update(array $criteria, array $set, array $options = array())
     {
-        return $this->getCollection()->update(
+        return $this->collection->update(
             $this->prepareCriteria($criteria),
             $set,
-            $options
+            array_merge(array('upsert' => true), $options)
         );
     }
 
@@ -229,7 +212,7 @@ abstract class AbstractCollection implements ServiceLocatorAwareInterface
      */
     public function delete(array $criteria = array(), array $options = array())
     {
-        return $this->getCollection()->remove(
+        return $this->collection->remove(
             $this->prepareCriteria($criteria),
             $options
         );
@@ -238,20 +221,12 @@ abstract class AbstractCollection implements ServiceLocatorAwareInterface
     /**
      * @return AbstractObject
      */
-    abstract protected function createObjectPrototype();
+    abstract public function createObjectPrototype();
 
     /**
      * @return AbstractObject
      */
     public function createObject()
-    {
-        return clone $this->getObjectPrototype();
-    }
-
-    /**
-     * @return AbstractObject
-     */
-    protected function getObjectPrototype()
     {
         if ($this->objectPrototype === null) {
             $this->objectPrototype = $this->createObjectPrototype();
@@ -264,10 +239,10 @@ abstract class AbstractCollection implements ServiceLocatorAwareInterface
      * @param string|\MongoId $id
      * @return AbstractObject|null
      */
-    public function getById($id)
+    public function findById($id)
     {
-        return $this->selectOne(array(
-            $this->getPrimaryFieldName() => $id
+        return $this->findOne(array(
+            '_id' => $id
         ));
     }
 }

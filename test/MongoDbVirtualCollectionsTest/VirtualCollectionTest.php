@@ -35,7 +35,7 @@ class VirtualCollectionTest extends AbstractCollectionTest
     public function getSupportCollection()
     {
         if ($this->supportCollection === null) {
-            $this->supportCollection = new SupportCollection($this->getServiceLocator(), $this->getDriver());
+            $this->supportCollection = new SupportCollection($this->getDriver());
         }
 
         return $this->supportCollection;
@@ -106,7 +106,7 @@ class VirtualCollectionTest extends AbstractCollectionTest
     // Otherwise @depends tag will fail
     public function testInsert()
     {
-        return parent::testInsert();
+        parent::testInsert();
     }
 
     /**
@@ -118,12 +118,12 @@ class VirtualCollectionTest extends AbstractCollectionTest
         $this->dummySecondaryInsert();
 
         $this->assertTrue(
-            $this->getCollection()->select()->current() instanceof Foo,
+            $this->getCollection()->find()->current() instanceof Foo,
             "select()->current() should return an instance of Foo"
         );
 
         $this->assertTrue(
-            $this->getSecondaryVirtualCollection()->select()->current() instanceof Bar,
+            $this->getSecondaryVirtualCollection()->find()->current() instanceof Bar,
             "select()->current() should return an instance of Bar"
         );
     }
@@ -232,23 +232,23 @@ class VirtualCollectionTest extends AbstractCollectionTest
 
         // Test whitout primary field casting
         $this->assertTrue(
-            $this->getSupportCollection()->getById($idFoo) instanceof Foo,
+            $this->getSupportCollection()->findById($idFoo) instanceof Foo,
             "get() should return an instance of Foo"
         );
 
         $this->assertTrue(
-            $this->getSupportCollection()->getById($idBar) instanceof Bar,
+            $this->getSupportCollection()->findById($idBar) instanceof Bar,
             "get() should return an instance of Bar"
         );
 
         // primary field casting is demanded to the model
         $this->assertTrue(
-            $this->getSupportCollection()->getById((string) $idFoo) instanceof Foo,
+            $this->getSupportCollection()->findById((string) $idFoo) instanceof Foo,
             "get() should return an instance of Foo"
         );
 
         $this->assertTrue(
-            $this->getSupportCollection()->getById((string) $idBar) instanceof Bar,
+            $this->getSupportCollection()->findById((string) $idBar) instanceof Bar,
             "get() should return an instance of Bar"
         );
     }

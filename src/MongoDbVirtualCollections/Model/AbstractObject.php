@@ -13,12 +13,9 @@ use Countable;
  * Class AbstractAsset
  * @package MongoDbVirtualCollectionsTest\Model
  */
-abstract class AbstractObject implements ServiceLocatorAwareInterface,
-                                         Countable,
+abstract class AbstractObject implements Countable,
                                          ArrayAccess
 {
-    use ServiceLocatorAwareTrait;
-
     /**
      * @var AbstractCollection
      */
@@ -32,15 +29,18 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
     /**
      * @var array
      */
-    protected $data = array();
+    protected $schema;
 
     /**
-     * @param ServiceLocatorInterface $serviceLocator
+     * @var string
+     */
+    public $_id;
+
+    /**
      * @param AbstractCollection $collection
      */
-    public function __construct(ServiceLocatorInterface $serviceLocator, AbstractCollection $collection)
+    public function __construct(AbstractCollection $collection)
     {
-        $this->setServiceLocator($serviceLocator);
         $this->collection = $collection;
         $this->initialize();
     }
@@ -48,9 +48,19 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
     /**
      * @return array
      */
-    protected function getAssetSchema()
+    protected function getSchema()
     {
-        return $this->getCollection()->getAssetSchema();
+        if ($this->schema === null) {
+            $properties = array();
+            $reflection = new \ReflectionClass($this);
+            foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+                $properties[$property->name] = $property->name;
+            }
+
+            $this->schema = $properties;
+        }
+
+        return $this->schema;
     }
 
     protected function initialize()
@@ -59,11 +69,7 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
             return;
         }
 
-        foreach ($this->getAssetSchema() as $fieldName) {
-            $this->data[$fieldName] = null;
-        }
-
-        $this->data[$this->getCollection()->getPrimaryFieldName()] = null;
+        $this->getSchema();
 
         $this->isInitialized = true;
     }
@@ -81,8 +87,9 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
      */
     protected function getPrimaryCriteria()
     {
-        $primary = $this->getCollection()->getPrimaryFieldName();
-        return array($primary, $this->getCollection()->createIdentifier($this->data[$primary]));
+        return array(
+            '_id' => $this->collection->createIdentifier($this->_id)
+        );
     }
 
     /**
@@ -90,27 +97,25 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
      */
     public function objectExistsInDatabase()
     {
-        return isset($this->data[$this->getCollection()->getPrimaryFieldName()]);
+        return isset($this->_id);
     }
 
     /**
-     * @return array|bool
+     * @return void
      */
     public function save()
     {
-        if ($this->objectExistsInDatabase()) {
-            $this->getCollection()->update(
-                $this->getPrimaryCriteria(),
-                $this->data
-            );
-        } else {
-            $this->data['_id'] = $this->getCollection()->createIdentifier();
-            $this->getCollection()->insert($this->data);
-        }
+        $data = $this->getArrayCopy();
+        $this->collection->update(
+            $this->getPrimaryCriteria(),
+            $data
+        );
+
+        $this->_id = (string) $data['_id'];
     }
 
     /**
-     * @return mixed
+     * @return void
      * @throws \Exception
      */
     public function delete()
@@ -119,7 +124,7 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
             throw new \Exception("The asset must exists in database to be deleted");
         }
 
-        return $this->getCollection()->delete(
+        $this->collection->delete(
             $this->getPrimaryCriteria()
         );
     }
@@ -130,7 +135,7 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
      */
     public function offsetExists($offset)
     {
-        return array_key_exists($offset, $this->data);
+        return array_key_exists($offset, $this->schema);
     }
 
     /**
@@ -140,42 +145,30 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
      */
     public function offsetGet($offset)
     {
-        if (!$this->offsetExists($offset)) {
-            throw new \InvalidArgumentException('Not a valid field in this object: ' . $offset);
-        }
-
-        return $this->data[$offset];
+        return $this->{$offset};
     }
 
 
     /**
      * @param string $offset
      * @param mixed $value
-     * @throws \InvalidArgumentException
      * @return AbstractObject
      */
     public function offsetSet($offset, $value)
     {
-        if (!$this->offsetExists($offset)) {
-            throw new \InvalidArgumentException('Not a valid field in this object: ' . $offset);
-        }
+        $this->{$offset} = $value;
 
-        $this->data[$offset] = $value;
         return $this;
     }
 
     /**
      * @param  string $offset
      * @return AbstractObject
-     * @throws \InvalidArgumentException
      */
     public function offsetUnset($offset)
     {
-        if (!$this->offsetExists($offset)) {
-            throw new \InvalidArgumentException('Not a valid field in this object: ' . $offset);
-        }
+        $this->{$offset} = null;
 
-        $this->data[$offset] = null;
         return $this;
     }
 
@@ -184,7 +177,7 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
      */
     public function count()
     {
-        return count($this->data);
+        return count($this->schema);
     }
 
     /**
@@ -192,7 +185,13 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
      */
     public function getArrayCopy()
     {
-        return $this->data;
+        $data = array();
+
+        foreach ($this->schema as $offset) {
+            $data[$offset] = $this->{$offset};
+        }
+
+        return $data;
     }
 
     /**
@@ -200,11 +199,7 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
      */
     public function toArray()
     {
-        $data = $this->data;
-        if (isset($data[$this->getCollection()->getPrimaryFieldName()])) {
-            $data[$this->getCollection()->getPrimaryFieldName()] = (string) $data[$this->getCollection()->getPrimaryFieldName()];
-        }
-        return $data;
+        return $this->getArrayCopy();
     }
 
     /**
@@ -213,8 +208,8 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
      */
     public function populate(array $data)
     {
-        foreach ($this->data as &$value) {
-            $value = null;
+        foreach ($this->schema as $offset) {
+            $this->{$offset} = null;
         }
 
         return $this->enhance($data);
@@ -226,9 +221,9 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
      */
     public function enhance(array $data)
     {
-        foreach ($data as $field => $value) {
-            if ($this->offsetExists($field)) {
-                $this->offsetSet($field, $value);
+        foreach ($data as $offset => $value) {
+            if ($this->offsetExists($offset)) {
+                $this->{$offset} = $value;
             }
         }
 
@@ -237,26 +232,23 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
 
     /**
      * @param $name
-     * @return mixed
      * @throws \InvalidArgumentException
+     * @return void
      */
     public function __get($name)
     {
-        if (array_key_exists($name, $this->data)) {
-            return $this->data[$name];
-        } else {
-            throw new \InvalidArgumentException('Not a valid field in this object: ' . $name);
-        }
+        throw new \InvalidArgumentException('Not a valid field in this object: ' . $name);
     }
 
     /**
      * @param string $name
      * @param mixed $value
+     * @throws \InvalidArgumentException
      * @return void
      */
     public function __set($name, $value)
     {
-        $this->offsetSet($name, $value);
+        throw new \InvalidArgumentException('Not a valid field in this object: ' . $name);
     }
 
     /**
@@ -265,15 +257,16 @@ abstract class AbstractObject implements ServiceLocatorAwareInterface,
      */
     public function __isset($name)
     {
-        return $this->offsetExists($name);
+        return false;
     }
 
     /**
      * @param string $name
+     * @throws \InvalidArgumentException
      * @return void
      */
     public function __unset($name)
     {
-        $this->offsetUnset($name);
+        throw new \InvalidArgumentException('Not a valid field in this object: ' . $name);
     }
 }

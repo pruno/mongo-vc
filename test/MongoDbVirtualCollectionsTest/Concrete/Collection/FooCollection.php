@@ -12,29 +12,15 @@ use MongoDbVirtualCollectionsTest\Concrete\Object\Foo;
 class FooCollection extends AbstractCollection
 {
     /**
-     * @return string
+     * @var string
      */
-    public function getCollectionName()
-    {
-        return 'foos';
-    }
+    protected $collectionName = 'foo';
 
     /**
      * @return Foo
      */
-    protected function createObjectPrototype()
+    public function createObjectPrototype()
     {
-        return new Foo($this->getServiceLocator(), $this);
-    }
-
-    /**
-     * @return array
-     */
-    public function getAssetSchema()
-    {
-        return array(
-            'foo1',
-            'foo2'
-        );
+        return new Foo($this);
     }
 }

@@ -16,18 +16,6 @@ class BarCollection extends AbstractVirtualCollection
      */
     public function createObjectPrototype()
     {
-        return new Bar($this->getServiceLocator(), $this);
-    }
-
-    /**
-     * @return array
-     */
-    public function getAssetSchema()
-    {
-        return array(
-            'bar1',
-            'bar2',
-            'bar3'
-        );
+        return new Bar($this);
     }
 }

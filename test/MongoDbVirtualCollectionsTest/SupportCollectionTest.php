@@ -11,7 +11,7 @@ class SupportCollectionTest extends AbstractCollectionTest
 {
     public function createCollection()
     {
-        return new SupportCollection($this->getServiceLocator(), $this->getDriver());
+        return new SupportCollection($this->getDriver());
     }
 
     public function testCreateObject()
@@ -65,13 +65,13 @@ class SupportCollectionTest extends AbstractCollectionTest
     // Otherwise @depends tag will fail
     public function testInsert()
     {
-        return parent::testInsert();
+        parent::testInsert();
     }
 
     // Otherwise @depends tag will fail
     public function testSelectRawData()
     {
-        return parent::testSelectRawData();
+        parent::testSelectRawData();
     }
 
     public function testGetById()

@@ -11,14 +11,19 @@ abstract class AbstractSupportCollection extends AbstractCollection
     /**
      * @var string
      */
-    const ASSET_CLASS_NAME_FIELD_NAME = '_class';
+    const CLASS_NAME_FIELD = '_class';
+
+    /**
+     * @var array
+     */
+    protected $virtualCollections = array();
 
     /**
      * @return string
      */
-    public function getAssetClassNameFieldName()
+    public function getClassNameField()
     {
-        return static::ASSET_CLASS_NAME_FIELD_NAME;
+        return static::CLASS_NAME_FIELD;
     }
 
     /**
@@ -30,32 +35,23 @@ abstract class AbstractSupportCollection extends AbstractCollection
     }
 
     /**
-     * @throws \Exception
+     * @param AbstractVirtualCollection $virtualCollection
+     * @param string $alias
      */
-    final public function getAssetSchema()
+    public function registerVirtualCollection(AbstractVirtualCollection $virtualCollection, $alias = null)
     {
-        throw new \Exception("Support collections should never define their own asset schema");
+        $this->virtualCollections[$alias] = $virtualCollection;
     }
 
     /**
      * @param string|\MongoId $id
-     * @return AbstractObject|null
-     * @deprecated Use getById
-     */
-    public function get($id)
-    {
-        return $this->getById($id);
-    }
-
-    /**
-     * @param string|\MongoId $id
-     * @return null|object
+     * @return null|Object
      * @throws \Exception
      */
-    public function getById($id)
+    public function findById($id)
     {
-        $raw = $this->selectRawData(
-            array($this->getPrimaryFieldName() => ($id instanceof \MongoId) ? $id : $this->createIdentifier($id)),
+        $raw = $this->findRaw(
+            array('_id' => ($id instanceof \MongoId) ? $id : $this->createIdentifier($id)),
             null,
             1
         )->current();
@@ -64,13 +60,17 @@ abstract class AbstractSupportCollection extends AbstractCollection
             return null;
         }
 
-        if (!array_key_exists($this->getAssetClassNameFieldName(), $raw)) {
-            throw new \Exception("Raw data is missing the className field \"".$this->getAssetClassNameFieldName()."\"");
+        if (!array_key_exists(static::CLASS_NAME_FIELD, $raw)) {
+            throw new \Exception("Raw data is missing the className field \"".static::CLASS_NAME_FIELD."\"");
         }
 
-        /* @var $concreteCollection AbstractVirtualCollection */
-        $concreteCollection = $this->getServiceLocator()->get($raw[$this->getAssetClassNameFieldName()]);
+        if (!array_key_exists($raw[static::CLASS_NAME_FIELD], $this->virtualCollections)) {
+            throw new \Exception("Alias class {$raw[static::CLASS_NAME_FIELD]} could not be resolved into a virtual collection");
+        }
 
-        return $concreteCollection->createAssetFromRawData($raw);
+        /* @var $virtualCollection AbstractVirtualCollection */
+        $virtualCollection = $this->virtualCollections[$raw[static::CLASS_NAME_FIELD]];
+
+        return $virtualCollection->createObjectFromRaw($raw);
     }
 }

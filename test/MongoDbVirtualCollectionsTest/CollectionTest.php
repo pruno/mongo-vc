@@ -15,6 +15,6 @@ class CollectionTest extends AbstractCollectionTest
      */
     public function createCollection()
     {
-        return new FooCollection($this->getServiceLocator(), $this->getDriver());
+        return new FooCollection($this->getDriver());
     }
 }

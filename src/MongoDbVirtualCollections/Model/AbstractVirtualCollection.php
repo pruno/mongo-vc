@@ -18,20 +18,33 @@ abstract class AbstractVirtualCollection extends AbstractCollection
     protected $supportCollection;
 
     /**
+     * @var string
+     */
+    protected $alias = null;
+
+    /**
      * @param AbstractSupportCollection $supportCollection
      */
     public function __construct(AbstractSupportCollection $supportCollection)
     {
         $this->supportCollection = $supportCollection;
-        $this->setServiceLocator($supportCollection->getServiceLocator());
+        $this->collection = $this->supportCollection->getCollection();
+        $this->supportCollection->registerVirtualCollection(
+            $this,
+            $this->getAlias()
+        );
     }
 
     /**
-     * @return \MongoCollection
+     * @return null|string
      */
-    final public function getCollection()
+    public function getAlias()
     {
-        return $this->getSupportCollection()->getCollection();
+        if ($this->alias === null) {
+            $this->alias = get_class($this);
+        }
+
+        return $this->alias;
     }
 
     /**
@@ -45,41 +58,9 @@ abstract class AbstractVirtualCollection extends AbstractCollection
     /**
      * @return string
      */
-    final public function getCollectionName()
+    final public function getClassNameField()
     {
-        return $this->getSupportCollection()->getCollectionName();
-    }
-
-    /**
-     * @return string
-     */
-    final public function getPrimaryFieldName()
-    {
-        return $this->getSupportCollection()->getPrimaryFieldName();
-    }
-
-    /**
-     * @return string
-     */
-    public function getAssetClassName()
-    {
-        return get_class($this->getObjectPrototype());
-    }
-
-    /**
-     * @return string
-     */
-    public function getCollectionClassName()
-    {
-        return get_class($this);
-    }
-
-    /**
-     * @return string
-     */
-    final public function getAssetClassNameFieldName()
-    {
-        return $this->getSupportCollection()->getAssetClassNameFieldName();
+        return $this->getSupportCollection()->getClassNameField();
     }
 
     /**
@@ -89,64 +70,20 @@ abstract class AbstractVirtualCollection extends AbstractCollection
     protected function prepareCriteria(array $criteria)
     {
         $criteria = parent::prepareCriteria($criteria);
-        $criteria[$this->getAssetClassNameFieldName()] = $this->getCollectionClassName();
+        $criteria[$this->getClassNameField()] = $this->getAlias();
 
         return $criteria;
     }
 
     /**
-     * @param array $data
-     * @return object
+     * @param $set
+     * @return mixed
      */
-    public function createAssetFromRawData(array $data)
+    protected function prepareSet($set)
     {
-        return $this->getHydrator()->hydrate(
-            $data,
-            $this->getObjectPrototype()
-        );
-    }
+        $set[$this->getClassNameField()] = $this->getAlias();
 
-    /**
-     * @param array $criteria
-     * @return int
-     */
-    public function count(array $criteria = array())
-    {
-        return $this->getSupportCollection()->count(
-            $this->prepareCriteria($criteria)
-        );
-    }
-
-    /**
-     * @param array $criteria
-     * @param array $sort
-     * @param null $limit
-     * @return \MongoCursor
-     */
-    public function selectRawData(array $criteria = array(), array $sort = null, $limit = null)
-    {
-        return $this->getSupportCollection()->selectRawData(
-            $this->prepareCriteria($criteria),
-            $sort,
-            $limit
-        );
-    }
-
-    /**
-     * @param array $criteria
-     * @param array $sort
-     * @param null $limit
-     * @return HydratingMongoCursor
-     */
-    public function select(array $criteria = array(), array $sort = null, $limit = null)
-    {
-        return $this->getHydratingMongoCursor(
-            $this->selectRawData(
-                $this->prepareCriteria($criteria),
-                $sort,
-                $limit
-            )
-        );
+        return $set;
     }
 
     /**
@@ -155,8 +92,8 @@ abstract class AbstractVirtualCollection extends AbstractCollection
      */
     public function insert(array $set)
     {
-        return $this->getSupportCollection()->insert(
-            $this->prepareCriteria($set)
+        return parent::insert(
+            $this->prepareSet($set)
         );
     }
 
@@ -164,27 +101,26 @@ abstract class AbstractVirtualCollection extends AbstractCollection
      * @param array $criteria
      * @param array $set
      * @param array $options
-     * @return boolean
+     * @return bool
      */
     public function update(array $criteria, array $set, array $options = array())
     {
-        return $this->getSupportCollection()->update(
-            $this->prepareCriteria($criteria),
-            $this->prepareCriteria($set),
+        return parent::update(
+            $criteria,
+            $this->prepareSet($set),
             $options
         );
     }
 
     /**
-     * @param array $criteria
-     * @param array $options
-     * @return mixed
+     * @param array $data
+     * @return object
      */
-    public function delete(array $criteria = array(), array $options = array())
+    public function createObjectFromRaw(array $data)
     {
-        return $this->getSupportCollection()->delete(
-            $this->prepareCriteria($criteria),
-            $options
+        return $this->getHydrator()->hydrate(
+            $data,
+            $this->createObject()
         );
     }
 }
