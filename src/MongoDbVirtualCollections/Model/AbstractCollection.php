@@ -2,6 +2,7 @@
 
 namespace MongoDbVirtualCollections\Model;
 
+use MongoDbVirtualCollections\Hydrator\Strategy\MongoIdStrategy;
 use MongoDbVirtualCollections\Model\HydratingMongoCursor;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
@@ -67,6 +68,7 @@ abstract class AbstractCollection
     {
         if ($this->hydrator === null) {
             $this->hydrator = new ArraySerializable();
+            $this->hydrator->addStrategy('_id', new MongoIdStrategy());
         }
 
         return $this->hydrator;
@@ -172,8 +174,6 @@ abstract class AbstractCollection
         if (!$raw) {
             return null;
         }
-
-        $raw['_id'] = (string) $raw['_id'];
 
         $object = $this->createObject();
         $this->getHydrator()->hydrate($raw, $object);
