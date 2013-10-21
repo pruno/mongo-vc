@@ -119,6 +119,27 @@ class ObjectTest extends AbstractTestCase
 
     /**
      * @depends testCreate
+     * @depends testSave
+     * @depends testUpsert
+     */
+    public function testFindUpdate()
+    {
+        $object = $this->createObject();
+        $object->foo1 = 'bar';
+        $object->save();
+
+        $object = $this->getCollection()->findOne();
+        $object->foo2 = 'bar';
+
+        try {
+            $object->save();
+        } catch (\Exception $e) {
+            $this->fail("save() thrown an exception with message: {$e->getMessage()}");
+        }
+    }
+
+    /**
+     * @depends testCreate
      */
     public function testEnhance()
     {

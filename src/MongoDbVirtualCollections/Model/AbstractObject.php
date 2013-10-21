@@ -106,6 +106,7 @@ abstract class AbstractObject implements Countable,
     public function save()
     {
         $data = $this->getArrayCopy();
+        $data['_id'] = $this->collection->createIdentifier($data['_id']);
 
         if ($this->objectExistsInDatabase()) {
             $this->collection->update(
@@ -113,7 +114,6 @@ abstract class AbstractObject implements Countable,
                 $data
             );
         } else {
-            $data['_id'] = $this->collection->createIdentifier();
             $this->collection->insert($data);
         }
 
