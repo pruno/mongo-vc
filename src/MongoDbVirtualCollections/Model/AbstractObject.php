@@ -48,7 +48,7 @@ abstract class AbstractObject implements Countable,
     /**
      * @return array
      */
-    protected function getSchema()
+    public function getSchema()
     {
         if ($this->schema === null) {
             $properties = array();
