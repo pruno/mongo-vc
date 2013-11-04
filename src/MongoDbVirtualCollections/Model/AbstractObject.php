@@ -130,7 +130,7 @@ abstract class AbstractObject implements Countable,
             throw new \Exception("The asset must exists in database to be deleted");
         }
 
-        $this->collection->delete(
+        $this->collection->remove(
             $this->getPrimaryCriteria()
         );
     }
