@@ -127,7 +127,7 @@ class HydratingMongoCursor implements Countable, Iterator
     {
         $results = array();
         foreach ($this->cursor as $data) {
-            $results = $this->current();
+            $results[] = $this->current();
         }
 
         return $results;
