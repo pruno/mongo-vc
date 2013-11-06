@@ -97,16 +97,30 @@ abstract class AbstractCollection
     }
 
     /**
+     * @param $id
+     * @return \MongoId
+     */
+    protected function prepareIdentifier($id)
+    {
+        if (is_array($id)) {
+            foreach ($id as &$val) {
+                $val = $this->prepareIdentifier($val);
+            }
+        } elseif (!$id instanceof \MongoId) {
+            $id = $this->createIdentifier($id);
+        }
+
+        return $id;
+    }
+
+    /**
      * @param array $criteria
      * @return array
      */
     protected function prepareCriteria(array $criteria)
     {
-        if (
-            array_key_exists('_id', $criteria)
-            && !($criteria['_id'] instanceof \MongoId)
-        ) {
-            $criteria['_id'] = $this->createIdentifier($criteria['_id']);
+        if (array_key_exists('_id', $criteria)) {
+            $criteria['_id'] = $this->prepareIdentifier($criteria['_id']);
         }
 
         return $criteria;
