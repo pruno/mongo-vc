@@ -119,4 +119,17 @@ class HydratingMongoCursor implements Countable, Iterator
     {
         return $this->cursor->valid();
     }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        $results = array();
+        foreach ($this->cursor as $data) {
+            $results = $this->current();
+        }
+
+        return $results;
+    }
 }
