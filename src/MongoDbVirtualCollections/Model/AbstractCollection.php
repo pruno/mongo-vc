@@ -3,11 +3,7 @@
 namespace MongoDbVirtualCollections\Model;
 
 use MongoDbVirtualCollections\Hydrator\Strategy\MongoIdStrategy;
-use MongoDbVirtualCollections\Model\HydratingMongoCursor;
-use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
-use Zend\ServiceManager\ServiceLocatorInterface;
-use Zend\ServiceManager\ServiceManager;
 use Zend\Stdlib\Hydrator\ArraySerializable;
 use Zend\Stdlib\Hydrator\HydratorInterface;
 
@@ -212,6 +208,26 @@ abstract class AbstractCollection
      */
     public function update(array $criteria, array $set, array $options = array())
     {
+        return $this->collection->update(
+            $this->prepareCriteria($criteria),
+            $set,
+            array_merge(array('upsert' => true), $options)
+        );
+    }
+
+    /**
+     * @param AbstractObject $object
+     * @param array $options
+     * @return boolean
+     */
+    public function updateObject(AbstractObject $object, $options = array())
+    {
+        $set = $this->getHydrator()->extract($object);
+
+        $criteria = array(
+            '_id' => $this->prepareIdentifier($object->_id)
+        );
+
         return $this->collection->update(
             $this->prepareCriteria($criteria),
             $set,
