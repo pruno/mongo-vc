@@ -87,32 +87,6 @@ abstract class AbstractVirtualCollection extends AbstractCollection
     }
 
     /**
-     * @param array $set
-     * @return array|bool
-     */
-    public function insert(array $set)
-    {
-        return parent::insert(
-            $this->prepareSet($set)
-        );
-    }
-
-    /**
-     * @param array $criteria
-     * @param array $set
-     * @param array $options
-     * @return bool
-     */
-    public function update(array $criteria, array $set, array $options = array())
-    {
-        return parent::update(
-            $criteria,
-            $this->prepareSet($set),
-            $options
-        );
-    }
-
-    /**
      * @param array $data
      * @return object
      */

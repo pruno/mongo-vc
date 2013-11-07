@@ -123,6 +123,15 @@ abstract class AbstractCollection
     }
 
     /**
+     * @param array $set
+     * @return array
+     */
+    protected function prepareSet(array $set)
+    {
+        return $set;
+    }
+
+    /**
      * @param array $criteria
      * @return int
      */
@@ -210,7 +219,7 @@ abstract class AbstractCollection
     {
         return $this->collection->update(
             $this->prepareCriteria($criteria),
-            $set,
+            $this->prepareSet($set),
             array_merge(array('upsert' => true), $options)
         );
     }
@@ -225,12 +234,12 @@ abstract class AbstractCollection
         $set = $this->getHydrator()->extract($object);
 
         $criteria = array(
-            '_id' => $this->prepareIdentifier($object->_id)
+            '_id' => $object->_id
         );
 
         $success = $this->collection->update(
             $this->prepareCriteria($criteria),
-            $set,
+            $this->prepareSet($set),
             array_merge(array('upsert' => true), $options)
         );
 
