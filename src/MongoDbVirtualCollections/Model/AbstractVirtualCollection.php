@@ -76,10 +76,10 @@ abstract class AbstractVirtualCollection extends AbstractCollection
     }
 
     /**
-     * @param $set
-     * @return mixed
+     * @param array $set
+     * @return array
      */
-    protected function prepareSet($set)
+    protected function prepareSet(array $set)
     {
         $set[$this->getClassNameField()] = $this->getAlias();
 
