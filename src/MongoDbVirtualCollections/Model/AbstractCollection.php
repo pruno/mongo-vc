@@ -228,11 +228,15 @@ abstract class AbstractCollection
             '_id' => $this->prepareIdentifier($object->_id)
         );
 
-        return $this->collection->update(
+        $success = $this->collection->update(
             $this->prepareCriteria($criteria),
             $set,
             array_merge(array('upsert' => true), $options)
         );
+
+        $object->_id = $set['_id'];
+
+        return $success;
     }
 
     /**
