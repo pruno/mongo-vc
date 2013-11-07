@@ -105,8 +105,9 @@ abstract class AbstractObject implements Countable,
      */
     public function save()
     {
-        $data = $this->getArrayCopy();
-        $data['_id'] = $this->collection->createIdentifier($data['_id']);
+//        $data = $this->getArrayCopy();
+//        $data['_id'] = $this->collection->createIdentifier($data['_id']);
+        $data = $this->getCollection()->getHydrator()->extract($this);
 
         if ($this->objectExistsInDatabase()) {
             $this->collection->update(

@@ -35,6 +35,14 @@ abstract class AbstractSupportCollection extends AbstractCollection
     }
 
     /**
+     * @throws \Exception
+     */
+    final public function getHydrator()
+    {
+        throw new \Exception("Support collections should never define their own hydrator");
+    }
+
+    /**
      * @param AbstractVirtualCollection $virtualCollection
      * @param string $alias
      */

@@ -64,7 +64,7 @@ abstract class AbstractCollection
     /**
      * @return HydratorInterface|null
      */
-    protected function getHydrator()
+    public function getHydrator()
     {
         if ($this->hydrator === null) {
             $this->hydrator = new ArraySerializable();
