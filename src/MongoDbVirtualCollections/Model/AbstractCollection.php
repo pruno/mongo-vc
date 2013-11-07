@@ -234,7 +234,7 @@ abstract class AbstractCollection
             array_merge(array('upsert' => true), $options)
         );
 
-        $object->_id = $set['_id'];
+        $this->getHydrator()->hydrate($set, $object);
 
         return $success;
     }
