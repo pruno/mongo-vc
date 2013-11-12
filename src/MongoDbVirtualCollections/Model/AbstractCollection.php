@@ -206,7 +206,9 @@ abstract class AbstractCollection
      */
     public function insert(array $set)
     {
-        return $this->collection->insert($set);
+        return $this->collection->insert(
+            $this->prepareSet($set)
+        );
     }
 
     /**
