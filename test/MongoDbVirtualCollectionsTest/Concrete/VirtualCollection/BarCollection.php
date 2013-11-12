@@ -12,6 +12,11 @@ use MongoDbVirtualCollectionsTest\Concrete\Object\Bar;
 class BarCollection extends AbstractVirtualCollection
 {
     /**
+     * @var string
+     */
+    protected $alias = 'Bars';
+
+    /**
      * @return Bar
      */
     public function createObjectPrototype()

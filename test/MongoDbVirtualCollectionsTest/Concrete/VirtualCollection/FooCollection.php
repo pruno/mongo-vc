@@ -12,6 +12,11 @@ use MongoDbVirtualCollectionsTest\Concrete\Object\Foo;
 class FooCollection extends AbstractVirtualCollection
 {
     /**
+     * @var string
+     */
+    protected $alias = 'Foos';
+
+    /**
      * @return Foo
      */
     public function createObjectPrototype()
