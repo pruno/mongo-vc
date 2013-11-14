@@ -29,10 +29,7 @@ abstract class AbstractVirtualCollection extends AbstractCollection
     {
         $this->supportCollection = $supportCollection;
         $this->collection = $this->supportCollection->getCollection();
-        $this->supportCollection->registerVirtualCollection(
-            $this,
-            $this->getAlias()
-        );
+        $this->supportCollection->registerVirtualCollection($this);
     }
 
     /**

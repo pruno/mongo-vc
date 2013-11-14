@@ -44,11 +44,10 @@ abstract class AbstractSupportCollection extends AbstractCollection
 
     /**
      * @param AbstractVirtualCollection $virtualCollection
-     * @param string $alias
      */
-    public function registerVirtualCollection(AbstractVirtualCollection $virtualCollection, $alias = null)
+    public function registerVirtualCollection(AbstractVirtualCollection $virtualCollection)
     {
-        $this->virtualCollections[$alias] = $virtualCollection;
+        $this->virtualCollections[$virtualCollection->getAlias()] = $virtualCollection;
     }
 
     /**
