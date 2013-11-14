@@ -58,13 +58,23 @@ abstract class AbstractCollection
     }
 
     /**
+     * @return ArraySerializable
+     */
+    protected function createHydrator()
+    {
+        $hydrator = new ArraySerializable();
+        $hydrator->addStrategy('_id', new MongoIdStrategy());
+
+        return $hydrator;
+    }
+
+    /**
      * @return HydratorInterface|null
      */
     public function getHydrator()
     {
         if ($this->hydrator === null) {
-            $this->hydrator = new ArraySerializable();
-            $this->hydrator->addStrategy('_id', new MongoIdStrategy());
+            $this->hydrator = $this->createHydrator();
         }
 
         return $this->hydrator;
