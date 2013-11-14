@@ -13,22 +13,22 @@ Introduction
 
 This Module aims to provide:
 
- - An handly Service Abstract Factory for \MongoDB instances
- - A simple Collection/Object extensible and hydratable userspace abstraction
- - A pattern to rappresent a unique mongo collection as more userspace collections (follow-up to know more)
+ - An handy Service Abstract Factory for \MongoDB instances
+ - A simple Collection/Object extensible and hydratable user-space abstraction
+ - A pattern to represent a unique mongo collection as more user-space collections (follow-up to know more)
  
  
 About Virtual Collections
 -------------------
 
-Virtualizing multiple collections on top of a single real one the application is able (in addition to all the usual actions) to perform "Agnostic" queries.  
+Virtualising multiple collections on top of a single real one the application is able (in addition to all the usual actions) to perform "Agnostic" queries.  
 With Agnostic query i mean the ability of querying the database (with or without a criteria set) for one or more object without knowing their kind.
 
 Consider the following scenario:
 
     1# A client request the object with id 527cacf1cfdfc0fd308b4583 using the route /:id
-    2# You got no clue if the object (assuming it exists) rappresent a burrito or a space shuttle
-    3# You may query the database from a support collection (the rappresentation of the real 
+    2# You got no clue if the object (assuming it exists) reppresent a burrito or a space shuttle
+    3# You may query the database from a support collection (the representation of the real 
        mongo collection) and get back a working instance of your model class Burrito.
 
 This pattern is also good to easily extend your controller logic alongside your model structure
@@ -37,7 +37,7 @@ Here's another scenario:
 
     # At a certain point in your application lifecycle you want to define the objects SpicyBurrito and 
       VeganBurrito.
-    # They both clearly derive from your Burrito object, yet they must define 2 completly different
+    # They both clearly derive from your Burrito object, yet they must define 2 completely different
       sets of attributes.
     # You can decide to extend both their Object and Collection classes from the burrito's ones instead
       of defining a single object with huge sets of attributes (most of which will be usually empty), 
@@ -130,8 +130,8 @@ In order to declare an object you need to extend from AbstractObject, which requ
 What you must to declare in your class:  
 
 An arbitrary number of public attribute (those will describe your object).  
-The _id property is already declare in the parent.  
-Be aware: you can't set attribute at runtime if not declared inside the class, such limitation is usefull to guarantee structure consistency. 
+The _id property is already declared in the parent.  
+Be aware: you can't set attribute at runtime if not declared inside the class, such limitation is useful to guarantee structure consistency. 
 
     class Burrito extends AbstractObject
     {
@@ -145,15 +145,15 @@ Be aware: you can't set attribute at runtime if not declared inside the class, s
          */
         public $price;
 
-        ...
+        …
     }
  
  
 ### Support collections
 
-By theirselfs useless, yet fundamental to let the VirtualCollection works.  
-SupportCollections are the userspace rappresentation of the real collections on the database while working in a virtual environment.  
-They should never declare their own object prototype since they don't rappresent a set similar objects.  
+By theirself useless, yet fundamental to let the VirtualCollection works.  
+SupportCollections are the user-space representation of the real collections on the database while working in a virtual environment.  
+They should never declare their own object prototype since they don't represent a set similar objects.  
 AbstractSupportCollection (which you must extend) directly extend from AbstractCollection so, like previously, you must define the $collectionName private property.
 
 
@@ -168,7 +168,7 @@ Register the factory under the ServiceManager than configure as follow:
             // Class FQN                           => driver name
             'Application\Model\BurritosCollection' => 'myDriver1Alias', 
             'Application\Model\SupportCollection'  => 'myDriver1Alias', 
-            ...
+            …
         ),
     )
     
@@ -179,13 +179,13 @@ The ServiceManager will return an instance of the collection
     
 ### Virtual collections
 
-Virtual collections covers in what support collections lack of, describing a set of similar object, but they are not able to rappresent the real database collection.  
+Virtual collections covers in what support collections lack of, describing a set of similar object, but they are not able to represent the real database collection.  
 AbstractVirtualCollection (which you must extend) directly extend from AbstractCollection and depends on an AbstractSupportCollection
 
     $burrito = new Burrito($serviceManager->get('Application\Model\SupportCollection'));
 
 Virtual Collections must declare their own object prototype (refer to the simple collection section).  
-When storing an object belonging to a virtual collection the module will add an hidden attribute to the real database object identifing at which collection the object is associated.  
+When storing an object belonging to a virtual collection the module will add an hidden attribute to the real database object identifying at which collection the object is associated.  
 IMPORTANT: By default the collection class full qualified name is used, however this behaviour is discouraged, because a slightly change in your application code structure may compromise your pre-existing data. In order to avoid this, virtual collections class names can be internally aliased, for you is simple as declaring the alias private property in the collection.
 
     /**
@@ -223,15 +223,15 @@ As version 0.2.0 the only agnostic method supported is AbstractSupportCollection
     
 IMPORTANT:  
 To achieve this result, the support collection resolve virtual collections aliases to their class. In order to do this, those collections must be previously registered (at runtime) to the support collection.  
-Internally, a virtual collection register itself at creation, so: you must guarantee that all the virtual collection in which the object may be contained have been instanciated at least one time before attempting to perform an agnostic query. If not, an exception will be throwned due to the fact that the support collection ignore which class should rappresent the fetched data.
+Internally, a virtual collection register itself at creation, so: you must guarantee that all the virtual collection in which the object may be contained have been instantiated at least one time before attempting to perform an agnostic query. If not, an exception will be throned due to the fact that the support collection ignore which class should represent the fetched data.
 
 
 ### Bundled hydrator
 
 Every collection comes with it's own Hydrator (\Zend\Stdlib\Hydrator\ArraySerializable), internally it's used to hydrate and extract data from and to objects and the php native mongo driver.  
-By default one strategy is registered (MongoIdStrategy) and is responsable for the conversion from e to an id string and the native object \MongoId.  
-This functionality is easly extensible overriding the protected method AbstractCollection::createHydrator().  
-Be carefull: in order to grant the major number of functionality of the collection the MongoIdStrategy must be set, you should either invoke the parent method or provide it by your own.  
+By default one strategy is registered (MongoIdStrategy) and is responsible for the conversion from e to an id string and the native object \MongoId.  
+This functionality is easiy extensible overriding the protected method AbstractCollection::createHydrator().  
+Be careful: in order to grant the major number of functionality of the collection the MongoIdStrategy must be set, you should either invoke the parent method or provide it by your own.  
 
     /**
      * @return ArraySerializable
@@ -239,7 +239,7 @@ Be carefull: in order to grant the major number of functionality of the collecti
     protected function createHydrator()
     {
         $hydrator = parent::createHydrator();
-        ...
+        …
 
         return $hydrator;
     }
