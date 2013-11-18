@@ -1,7 +1,7 @@
 ZF2-MongoDB-VirtualCollections 0.2.0
 ====================================
 
-Zend Framework 2 Module for handling MongoDB Abstraction
+Zend Framework 2 Module for MongoDB operations abstraction.
 
 Master: [![Build Status](https://travis-ci.org/pruno/ZF2-MongoDB-VirtualCollections.png?branch=master)](https://travis-ci.org/pruno/ZF2-MongoDB-VirtualCollections)
 Develop: [![Build Status](https://travis-ci.org/pruno/ZF2-MongoDB-VirtualCollections.png?branch=develop)](https://travis-ci.org/pruno/ZF2-MongoDB-VirtualCollections)
@@ -22,35 +22,38 @@ About Virtual Collections
 -------------------
 
 Virtualising multiple collections on top of a single real one the application is able (in addition to all the usual actions) to perform "Agnostic" queries.  
-With Agnostic query i mean the ability of querying the database (with or without a criteria set) for one or more object without knowing their kind.
+Perform Agnostic query means: querying the database (with or without a criteria set) for one or more object without knowing their kind.
 
 Consider the following scenario:
 
     1# A client request the object with id 527cacf1cfdfc0fd308b4583 using the route /:id
-    2# You got no clue if the object (assuming it exists) reppresent a burrito or a space shuttle
-    3# You may query the database from a support collection (the representation of the real 
-       mongo collection) and get back a working instance of your model class Burrito.
+    2# The application has no information regarding the desired object type.
+       on a regular base you may have a route similar to /burritos/:id that will tell the application
+       to search for the given id inside the burritos collection.
+    3# With collection virtualization the database could be queried from a support collection (the 
+       representation of the real mongo collection) and get back a working instance of the model 
+       class Burrito.
 
-This pattern is also good to easily extend your controller logic alongside your model structure
+This pattern is also good to easily extend controller logic alongside the model structure
 
 Here's another scenario:
 
-    # At a certain point in your application lifecycle you want to define the objects SpicyBurrito and 
-      VeganBurrito.
-    # They both clearly derive from your Burrito object, yet they must define 2 completely different
+    # At a certain point in an application lifecycle the definition the objects SpicyBurrito and 
+      VeganBurrito is required.
+    # They both clearly derive from the Burrito object, yet they must define 2 completely different
       sets of attributes.
-    # You can decide to extend both their Object and Collection classes from the burrito's ones instead
-      of defining a single object with huge sets of attributes (most of which will be usually empty), 
-      still maintaining your standard mvc route /burrito/:id (or simply /:id)
+    # Both Objects and Collections declaration of the new entities could extends from the burrito's ones
+      instead of defining a single object with huge sets of attributes (most of which will be usually
+      empty), still maintaining the basic mvc route /:id
       
 
 
 Installation
 ------------
 
-Use [composer](http://getcomposer.org/):
+Using [composer](http://getcomposer.org/):
 
-Add the following nodes to your composer.json file
+Add the following to your `composer.json` file:
 
     "require": {
         ...
@@ -64,7 +67,11 @@ Add the following nodes to your composer.json file
             "url": "https://github.com/pruno/ZF2-MongoDB-VirtualCollections.git"
         }
     ]
-    
+
+Alternately with git submodules:
+
+    git submodule add https://github.com/pruno/ZF2-MongoDB-VirtualCollections.git pruno/ZF2-MongoDB-VirtualCollections
+
  
 How To's
 ------
@@ -223,14 +230,14 @@ As version 0.2.0 the only agnostic method supported is AbstractSupportCollection
     
 IMPORTANT:  
 To achieve this result, the support collection resolve virtual collections aliases to their class. In order to do this, those collections must be previously registered (at runtime) to the support collection.  
-Internally, a virtual collection register itself at creation, so: you must guarantee that all the virtual collection in which the object may be contained have been instantiated at least one time before attempting to perform an agnostic query. If not, an exception will be throned due to the fact that the support collection ignore which class should represent the fetched data.
+Internally, a virtual collection register itself at creation, so: you must guarantee that all the virtual collection in which the object may be contained have been instantiated at least one time per request before attempting to perform an agnostic query. If not, an exception will be throned due to the fact that the support collection ignore which class should represent the fetched data.
 
 
 ### Bundled hydrator
 
 Every collection comes with it's own Hydrator (\Zend\Stdlib\Hydrator\ArraySerializable), internally it's used to hydrate and extract data from and to objects and the php native mongo driver.  
 By default one strategy is registered (MongoIdStrategy) and is responsible for the conversion from e to an id string and the native object \MongoId.  
-This functionality is easiy extensible overriding the protected method AbstractCollection::createHydrator().  
+This functionality is easily extensible overriding the protected method AbstractCollection::createHydrator().  
 Be careful: in order to grant the major number of functionality of the collection the MongoIdStrategy must be set, you should either invoke the parent method or provide it by your own.  
 
     /**
