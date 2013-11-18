@@ -12,22 +12,15 @@ use MongoDbVirtualCollectionsTest\Concrete\Object\Bar;
 class BarCollection extends AbstractVirtualCollection
 {
     /**
+     * @var string
+     */
+    protected $alias = 'Bars';
+
+    /**
      * @return Bar
      */
     public function createObjectPrototype()
     {
-        return new Bar($this->getServiceLocator(), $this);
-    }
-
-    /**
-     * @return array
-     */
-    public function getAssetSchema()
-    {
-        return array(
-            'bar1',
-            'bar2',
-            'bar3'
-        );
+        return new Bar($this);
     }
 }

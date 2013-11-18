@@ -10,11 +10,5 @@ use MongoDbVirtualCollections\Model\AbstractSupportCollection;
  */
 class SupportCollection extends AbstractSupportCollection
 {
-    /**
-     * @return string
-     */
-    public function getCollectionName()
-    {
-        return 'virtuals';
-    }
+    protected $collectionName = 'virtuals';
 }

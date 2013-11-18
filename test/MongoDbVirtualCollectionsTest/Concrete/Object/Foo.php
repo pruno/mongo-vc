@@ -10,5 +10,7 @@ use MongoDbVirtualCollections\Model\AbstractObject;
  */
 class Foo extends AbstractObject
 {
+    public $foo1;
 
+    public $foo2;
 }

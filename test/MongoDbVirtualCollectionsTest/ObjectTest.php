@@ -32,7 +32,7 @@ class ObjectTest extends AbstractTestCase
     public function getCollection()
     {
         if ($this->collection === null) {
-            $this->collection = new FooCollection($this->getServiceLocator(), $this->getDriver());
+            $this->collection = new FooCollection($this->getDriver());
         }
 
         return $this->collection;
@@ -43,7 +43,7 @@ class ObjectTest extends AbstractTestCase
      */
     public function createObject()
     {
-        return new Foo($this->getServiceLocator(), $this->getCollection());
+        return new Foo($this->getCollection());
     }
 
     public function testCreate()
@@ -85,7 +85,7 @@ class ObjectTest extends AbstractTestCase
 
         $this->assertEquals(
             $object->toArray(),
-            $this->getCollection()->select()->current()->toArray(),
+            $this->getCollection()->find()->current()->toArray(),
             'selecting after save() should return the same data array'
         );
     }
@@ -119,11 +119,33 @@ class ObjectTest extends AbstractTestCase
 
     /**
      * @depends testCreate
+     * @depends testSave
+     * @depends testUpsert
+     */
+    public function testFindUpdate()
+    {
+        $object = $this->createObject();
+        $object->foo1 = 'bar';
+        $object->save();
+
+        $object = $this->getCollection()->findOne();
+        $object->foo2 = 'bar';
+
+        try {
+            $object->save();
+        } catch (\Exception $e) {
+            $this->fail("save() thrown an exception with message: {$e->getMessage()}");
+        }
+    }
+
+    /**
+     * @depends testCreate
      */
     public function testEnhance()
     {
         $object = $this->createObject();
         $object->foo1 = 'bar';
+
         $object->enhance(array(
             'foo1' => 'bar2',
             'foo2' => 'bar'

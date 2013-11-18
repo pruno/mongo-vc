@@ -35,7 +35,7 @@ class VirtualCollectionTest extends AbstractCollectionTest
     public function getSupportCollection()
     {
         if ($this->supportCollection === null) {
-            $this->supportCollection = new SupportCollection($this->getServiceLocator(), $this->getDriver());
+            $this->supportCollection = new SupportCollection($this->getDriver());
         }
 
         return $this->supportCollection;
@@ -106,24 +106,24 @@ class VirtualCollectionTest extends AbstractCollectionTest
     // Otherwise @depends tag will fail
     public function testInsert()
     {
-        return parent::testInsert();
+        parent::testInsert();
     }
 
     /**
      * @depends testInsert
      */
-    public function testHybridSelect()
+    public function testHybridFind()
     {
         $this->dummyInsert();
         $this->dummySecondaryInsert();
 
         $this->assertTrue(
-            $this->getCollection()->select()->current() instanceof Foo,
+            $this->getCollection()->find()->current() instanceof Foo,
             "select()->current() should return an instance of Foo"
         );
 
         $this->assertTrue(
-            $this->getSecondaryVirtualCollection()->select()->current() instanceof Bar,
+            $this->getSecondaryVirtualCollection()->find()->current() instanceof Bar,
             "select()->current() should return an instance of Bar"
         );
     }
@@ -194,7 +194,7 @@ class VirtualCollectionTest extends AbstractCollectionTest
         $this->dummyInsert();
         $this->dummySecondaryInsert();
 
-        $this->getCollection()->delete();
+        $this->getCollection()->remove();
 
         $this->assertEquals(
             $this->getCollection()->count(),
@@ -212,11 +212,8 @@ class VirtualCollectionTest extends AbstractCollectionTest
     /**
      * @depends testInsert
      */
-    public function testAgnosticGet()
+    public function testAgnosticGetById()
     {
-        $this->getServiceLocator()->addAbstractFactory(new CollectionAbstractFactory());
-        $this->getServiceLocator()->addAbstractFactory(new VirtualCollectionAbstractFactory());
-
         $idFoo = new \MongoId();
         $idBar = new \MongoId();
 
@@ -232,23 +229,23 @@ class VirtualCollectionTest extends AbstractCollectionTest
 
         // Test whitout primary field casting
         $this->assertTrue(
-            $this->getSupportCollection()->get($idFoo) instanceof Foo,
+            $this->getSupportCollection()->findById($idFoo) instanceof Foo,
             "get() should return an instance of Foo"
         );
 
         $this->assertTrue(
-            $this->getSupportCollection()->get($idBar) instanceof Bar,
+            $this->getSupportCollection()->findById($idBar) instanceof Bar,
             "get() should return an instance of Bar"
         );
 
         // primary field casting is demanded to the model
         $this->assertTrue(
-            $this->getSupportCollection()->get((string) $idFoo) instanceof Foo,
+            $this->getSupportCollection()->findById((string) $idFoo) instanceof Foo,
             "get() should return an instance of Foo"
         );
 
         $this->assertTrue(
-            $this->getSupportCollection()->get((string) $idBar) instanceof Bar,
+            $this->getSupportCollection()->findById((string) $idBar) instanceof Bar,
             "get() should return an instance of Bar"
         );
     }

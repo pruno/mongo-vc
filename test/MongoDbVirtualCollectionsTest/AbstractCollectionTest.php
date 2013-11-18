@@ -60,20 +60,6 @@ abstract class AbstractCollectionTest extends AbstractTestCase
         parent::tearDown();
     }
 
-    public function testHasPrimaryField()
-    {
-        $className = get_class($this->getCollection());
-        $this->assertTrue(
-            is_string($className::PRIMARY_FIELD_NAME),
-            'Collection class is missing RIMARY_FIELD_NAME const'
-        );
-
-        $this->assertTrue(
-            is_string($this->getCollection()->getPrimaryFieldName()),
-            'getPrimaryFieldName() not returning a valid field name'
-        );
-    }
-
     public function testGetCollectionName()
     {
         $this->assertString(
@@ -121,7 +107,7 @@ abstract class AbstractCollectionTest extends AbstractTestCase
         try {
             $id = new \MongoId();
             $this->getCollection()->insert(array(
-                $this->getCollection()->getPrimaryFieldName() => (string) $id,
+                '_id' => (string) $id,
                 'foo' => 'bar'
             ));
         } catch (\Exception $e){
@@ -169,17 +155,22 @@ abstract class AbstractCollectionTest extends AbstractTestCase
     /**
      * @depends testInsert
      */
-    public function testSelectRawData()
+    public function testFindRaw()
     {
         $this->dummyInsert();
 
-        $data = $this->getCollection()->selectRawData(array())->current();
+        $data = $this->getCollection()->findRaw(array())->current();
         $this->assertTrue(
             is_array($data) && $data,
             'selectRawData()->current() should return a non-empty array'
         );
 
-        $data = $this->getCollection()->selectRawData(array(
+        $this->assertTrue(
+            $data['_id'] instanceof \MongoId,
+            "findRaw() data result '_id' index should be an instance of \\MongoId"
+        );
+
+        $data = $this->getCollection()->findRaw(array(
             'foo' => 'bar'
         ))->current();
 
@@ -188,7 +179,7 @@ abstract class AbstractCollectionTest extends AbstractTestCase
             'selectRawData(array(\'foo\' => \'bar\'))->current() should return a non-empty array'
         );
 
-        $data = $this->getCollection()->selectRawData(array(
+        $data = $this->getCollection()->findRaw(array(
             'bar' => 'foo'
         ))->current();
 
@@ -201,13 +192,47 @@ abstract class AbstractCollectionTest extends AbstractTestCase
     /**
      * @depends testInsert
      */
-    public function testSelect()
+    public function testFind()
     {
         $this->dummyInsert();
 
+        $object = $this->getCollection()->find()->current();
+
         $this->assertTrue(
-            $this->getCollection()->select()->current() instanceof AbstractObject,
+            $object instanceof AbstractObject,
             '->select()->current() should return an instance of AbstractObject'
+        );
+
+        $this->assertString(
+            $object->_id,
+            "Object _id property should be a string"
+        );
+    }
+
+    /**
+     * @depends testInsert
+     */
+    public function testFindOne()
+    {
+        $this->dummyInsert();
+
+        $this->getCollection()->insert(array(
+            'bar' => 'foo'
+        ));
+
+        $this->assertTrue(
+            $this->getCollection()->findOne(array()) instanceof AbstractObject,
+            '->selectOne() should return an instance of AbstractObject'
+        );
+
+        $this->assertTrue(
+            $this->getCollection()->findOne(array('bar' => 'foo')) instanceof AbstractObject,
+            '->selectOne() should return an instance of AbstractObject'
+        );
+
+        $this->assertNull(
+            $this->getCollection()->findOne(array('nonExistingField' => 1)),
+            '->selectOne() should return an instance of AbstractObject'
         );
     }
 
@@ -242,11 +267,11 @@ abstract class AbstractCollectionTest extends AbstractTestCase
      * @depends testInsert
      * @depends testCount
      */
-    public function testDelete()
+    public function testRemove()
     {
         $this->dummyInsert();
 
-        $this->getCollection()->delete();
+        $this->getCollection()->remove();
 
         $this->assertEquals(
             $this->getCollection()->count(),
@@ -256,7 +281,7 @@ abstract class AbstractCollectionTest extends AbstractTestCase
 
         $this->dummyInsert();
 
-        $this->getCollection()->delete(array(
+        $this->getCollection()->remove(array(
             'foo' => 'bar'
         ));
 
@@ -268,7 +293,7 @@ abstract class AbstractCollectionTest extends AbstractTestCase
 
         $this->dummyInsert();
 
-        $this->getCollection()->delete(array(
+        $this->getCollection()->remove(array(
             'bar' => 'foo'
         ));
 
@@ -291,7 +316,7 @@ abstract class AbstractCollectionTest extends AbstractTestCase
         $typeTested = false;
         $c = 0;
 
-        $hydratingCursor = $this->getCollection()->select();
+        $hydratingCursor = $this->getCollection()->find();
 
         foreach ($hydratingCursor as $object) {
             ++$c;
@@ -309,5 +334,22 @@ abstract class AbstractCollectionTest extends AbstractTestCase
             $c,
             'Unexpected hydrating cursor count() value'
         );
+    }
+
+    /**
+     * @depends testInsert
+     * @depends testFindRaw
+     */
+    public function testGetById()
+    {
+        $this->dummyInsert();
+
+        $data = $this->getCollection()->findRaw(array())->current();
+
+        $object = $this->getCollection()->findById((string) $data['_id']);
+
+        $this->assertTrue($object instanceof AbstractObject, 'getById() should return an instance of MongoDbVirtualCollections\Model\AbstractObject');
+
+        $this->assertEquals((string) $data['_id'], $object->offsetGet('_id'), "_id field does not match with the requested one");
     }
 }

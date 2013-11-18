@@ -18,20 +18,30 @@ abstract class AbstractVirtualCollection extends AbstractCollection
     protected $supportCollection;
 
     /**
+     * @var string
+     */
+    protected $alias = null;
+
+    /**
      * @param AbstractSupportCollection $supportCollection
      */
     public function __construct(AbstractSupportCollection $supportCollection)
     {
         $this->supportCollection = $supportCollection;
-        $this->setServiceLocator($supportCollection->getServiceLocator());
+        $this->collection = $this->supportCollection->getCollection();
+        $this->supportCollection->registerVirtualCollection($this);
     }
 
     /**
-     * @return \MongoCollection
+     * @return null|string
      */
-    final public function getCollection()
+    public function getAlias()
     {
-        return $this->getSupportCollection()->getCollection();
+        if ($this->alias === null) {
+            $this->alias = get_class($this);
+        }
+
+        return $this->alias;
     }
 
     /**
@@ -45,41 +55,9 @@ abstract class AbstractVirtualCollection extends AbstractCollection
     /**
      * @return string
      */
-    final public function getCollectionName()
+    final public function getClassNameField()
     {
-        return $this->getSupportCollection()->getCollectionName();
-    }
-
-    /**
-     * @return string
-     */
-    final public function getPrimaryFieldName()
-    {
-        return $this->getSupportCollection()->getPrimaryFieldName();
-    }
-
-    /**
-     * @return string
-     */
-    public function getAssetClassName()
-    {
-        return get_class($this->getObjectPrototype());
-    }
-
-    /**
-     * @return string
-     */
-    public function getCollectionClassName()
-    {
-        return get_class($this);
-    }
-
-    /**
-     * @return string
-     */
-    final public function getAssetClassNameFieldName()
-    {
-        return $this->getSupportCollection()->getAssetClassNameFieldName();
+        return $this->getSupportCollection()->getClassNameField();
     }
 
     /**
@@ -89,102 +67,31 @@ abstract class AbstractVirtualCollection extends AbstractCollection
     protected function prepareCriteria(array $criteria)
     {
         $criteria = parent::prepareCriteria($criteria);
-        $criteria[$this->getAssetClassNameFieldName()] = $this->getCollectionClassName();
+        $criteria[$this->getClassNameField()] = $this->getAlias();
 
         return $criteria;
+    }
+
+    /**
+     * @param array $set
+     * @return array
+     */
+    protected function prepareSet(array $set)
+    {
+        $set[$this->getClassNameField()] = $this->getAlias();
+
+        return $set;
     }
 
     /**
      * @param array $data
      * @return object
      */
-    public function createAssetFromRawData(array $data)
+    public function createObjectFromRaw(array $data)
     {
         return $this->getHydrator()->hydrate(
             $data,
-            $this->getObjectPrototype()
-        );
-    }
-
-    /**
-     * @param array $criteria
-     * @return int
-     */
-    public function count(array $criteria = array())
-    {
-        return $this->getSupportCollection()->count(
-            $this->prepareCriteria($criteria)
-        );
-    }
-
-    /**
-     * @param array $criteria
-     * @param array $sort
-     * @param null $limit
-     * @return \MongoCursor
-     */
-    public function selectRawData(array $criteria = array(), array $sort = null, $limit = null)
-    {
-        return $this->getSupportCollection()->selectRawData(
-            $this->prepareCriteria($criteria),
-            $sort,
-            $limit
-        );
-    }
-
-    /**
-     * @param array $criteria
-     * @param array $sort
-     * @param null $limit
-     * @return HydratingMongoCursor
-     */
-    public function select(array $criteria = array(), array $sort = null, $limit = null)
-    {
-        return $this->getHydratingMongoCursor(
-            $this->selectRawData(
-                $this->prepareCriteria($criteria),
-                $sort,
-                $limit
-            )
-        );
-    }
-
-    /**
-     * @param array $set
-     * @return array|bool
-     */
-    public function insert(array $set)
-    {
-        return $this->getSupportCollection()->insert(
-            $this->prepareCriteria($set)
-        );
-    }
-
-    /**
-     * @param array $criteria
-     * @param array $set
-     * @param array $options
-     * @return boolean
-     */
-    public function update(array $criteria, array $set, array $options = array())
-    {
-        return $this->getSupportCollection()->update(
-            $this->prepareCriteria($criteria),
-            $this->prepareCriteria($set),
-            $options
-        );
-    }
-
-    /**
-     * @param array $criteria
-     * @param array $options
-     * @return mixed
-     */
-    public function delete(array $criteria = array(), array $options = array())
-    {
-        return $this->getSupportCollection()->delete(
-            $this->prepareCriteria($criteria),
-            $options
+            $this->createObject()
         );
     }
 }

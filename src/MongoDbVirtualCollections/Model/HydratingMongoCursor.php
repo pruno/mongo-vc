@@ -33,7 +33,7 @@ class HydratingMongoCursor implements Countable, Iterator
      * @param MongoCursor $cursor
      * @param HydratorInterface $hydrator
      * @param AbstractObject $prototype
-     * @throw InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function __construct(MongoCursor $cursor, HydratorInterface $hydrator, AbstractObject $prototype)
     {
@@ -91,7 +91,7 @@ class HydratingMongoCursor implements Countable, Iterator
             return $result;
         }
 
-        return $this->hydrator->hydrate($result, clone $this->prototype);
+        return $this->hydrator->hydrate($result, clone $this->getPrototype());
     }
 
     /**
@@ -118,5 +118,18 @@ class HydratingMongoCursor implements Countable, Iterator
     public function valid()
     {
         return $this->cursor->valid();
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        $results = array();
+        foreach ($this->cursor as $data) {
+            $results[] = $this->current();
+        }
+
+        return $results;
     }
 }
