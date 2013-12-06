@@ -1,4 +1,4 @@
-ZF2-MongoDB-VirtualCollections 0.2.0
+ZF2-MongoDB-VirtualCollections 0.3.0
 ====================================
 
 Zend Framework 2 Module for MongoDB operations abstraction.
