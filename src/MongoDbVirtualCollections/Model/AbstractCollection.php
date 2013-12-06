@@ -86,11 +86,7 @@ abstract class AbstractCollection
      */
     protected function getHydratingMongoCursor(\MongoCursor $cursor)
     {
-        return new HydratingMongoCursor(
-            $cursor,
-            $this->getHydrator(),
-            $this->createObject()
-        );
+        return new HydratingMongoCursor($cursor, $this);
     }
 
     /**
@@ -299,5 +295,17 @@ abstract class AbstractCollection
         return $this->findOne(array(
             '_id' => $id
         ));
+    }
+
+    /**
+     * @param array $data
+     * @return AbstractObject
+     */
+    public function createObjectFromRaw(array $data)
+    {
+        return $this->getHydrator()->hydrate(
+            $data,
+            $this->createObject()
+        );
     }
 }

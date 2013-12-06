@@ -92,6 +92,14 @@ abstract class AbstractCollectionTest extends AbstractTestCase
         );
     }
 
+    public function testCreateObjectFromRaw()
+    {
+        $this->assertTrue(
+            $this->getCollection()->createObjectFromRaw(array('foo' => 'bar')) instanceof AbstractObject,
+            "createObjectFromRaw() should return an instance of AbstractObject"
+        );
+    }
+
     public function testInsert()
     {
         // primary field casting is demanded to the driver
@@ -222,17 +230,17 @@ abstract class AbstractCollectionTest extends AbstractTestCase
 
         $this->assertTrue(
             $this->getCollection()->findOne(array()) instanceof AbstractObject,
-            '->selectOne() should return an instance of AbstractObject'
+            '->findOne() should return an instance of AbstractObject'
         );
 
         $this->assertTrue(
             $this->getCollection()->findOne(array('bar' => 'foo')) instanceof AbstractObject,
-            '->selectOne() should return an instance of AbstractObject'
+            '->findOne() should return an instance of AbstractObject'
         );
 
         $this->assertNull(
             $this->getCollection()->findOne(array('nonExistingField' => 1)),
-            '->selectOne() should return an instance of AbstractObject'
+            '->findOne() should return an instance of AbstractObject'
         );
     }
 
@@ -340,7 +348,7 @@ abstract class AbstractCollectionTest extends AbstractTestCase
      * @depends testInsert
      * @depends testFindRaw
      */
-    public function testGetById()
+    public function testFindById()
     {
         $this->dummyInsert();
 

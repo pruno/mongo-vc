@@ -1,4 +1,4 @@
-ZF2-MongoDB-VirtualCollections 0.2.0
+ZF2-MongoDB-VirtualCollections 0.3.0
 ====================================
 
 Zend Framework 2 Module for MongoDB operations abstraction.
@@ -222,15 +222,37 @@ The ServiceManager will return an instance of the collection
 ### Perform an agnostic query
 
 In order to perform an agnostic query the Support Collection must be used.
-As version 0.2.0 the only agnostic method supported is AbstractSupportCollection::findById().
 
     $serviceManager->get('Application\Model\BurritosCollection');
-    $serviceManager->get('Application\Model\SpaseShuttlesCollection');
+    $serviceManager->get('Application\Model\SpaceShuttlesCollection');
     $object = $serviceManager->get('Application\Model\SupportCollection')->findById($id);
+    
+Supported agnostic methods are:
+
+- find()
+- findOne()
+- findById()
     
 IMPORTANT:  
 To achieve this result, the support collection resolve virtual collections aliases to their class. In order to do this, those collections must be previously registered (at runtime) to the support collection.  
 Internally, a virtual collection register itself at creation, so: you must guarantee that all the virtual collection in which the object may be contained have been instantiated at least one time per request before attempting to perform an agnostic query. If not, an exception will be throned due to the fact that the support collection ignore which class should represent the fetched data.
+
+#### Virtualization group
+
+Virtualization grouping is a functionality useful to perform agnostic operation only on a subset of registered virtual collections.  
+
+    $serviceManager->get('Application\Model\BurritosCollection');
+    $serviceManager->get('Application\Model\SpaceShuttlesCollection');
+    $serviceManager->get('Application\Model\ChairsCollection');
+    $supportCollection = $serviceManager->get('Application\Model\SupportCollection');
+    
+    $supportCollection->find(); // Will search for Burritos, SpaseShuttles and Chairs.
+    
+    $supportCollection->setVirtualizationGroup(array('burritos', 'chairs')); // Those are the collections aliases.
+    
+    $supportCollection->find(); // Will not search SpaseShuttles.
+    
+    $supportCollection->setVirtualizationGroup(array()); // Restore default functionality.
 
 
 ### Bundled hydrator
