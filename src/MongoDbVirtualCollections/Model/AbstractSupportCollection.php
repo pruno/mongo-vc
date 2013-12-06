@@ -81,18 +81,10 @@ abstract class AbstractSupportCollection extends AbstractCollection
     {
         $criteria = parent::prepareCriteria($criteria);
 
-        switch (count($this->virtualizationGroup)) {
-            case 0 :
-                break;
-
-            case 1 :
-                $criteria[$this->getClassNameField()] = $this->virtualizationGroup[0];
-                break;
-
-            default :
-                $criteria[$this->getClassNameField()] = array(
-                    '$or' => $this->virtualizationGroup
-                );
+        if ($this->virtualizationGroup) {
+            $criteria[$this->getClassNameField()] = array(
+                '$in' => $this->virtualizationGroup
+            );
         }
 
         return $criteria;

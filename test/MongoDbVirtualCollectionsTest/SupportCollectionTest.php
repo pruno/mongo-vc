@@ -8,6 +8,7 @@ use MongoDbVirtualCollectionsTest\Concrete\Object\Bar;
 use MongoDbVirtualCollectionsTest\Concrete\Object\Foo;
 use MongoDbVirtualCollectionsTest\Concrete\SupportCollection\SupportCollection;
 use MongoDbVirtualCollectionsTest\Concrete\VirtualCollection\BarCollection;
+use MongoDbVirtualCollectionsTest\Concrete\VirtualCollection\BazCollection;
 use MongoDbVirtualCollectionsTest\Concrete\VirtualCollection\FooCollection;
 
 /**
@@ -26,6 +27,11 @@ class SupportCollectionTest extends AbstractCollectionTest
     protected $secondaryVirtualCollection;
 
     /**
+     * @var BazCollection
+     */
+    protected $tertiaryVirtualCollection;
+
+    /**
      * @return SupportCollection
      */
     public function createCollection()
@@ -38,7 +44,7 @@ class SupportCollectionTest extends AbstractCollectionTest
      */
     public function getVirtualCollection()
     {
-        if ($this->secondaryVirtualCollection === null) {
+        if ($this->virtualCollection === null) {
             return new FooCollection($this->getCollection());
         }
 
@@ -55,6 +61,18 @@ class SupportCollectionTest extends AbstractCollectionTest
         }
 
         return $this->secondaryVirtualCollection;
+    }
+
+    /**
+     * @return BazCollection
+     */
+    public function getTertiaryVirtualCollection()
+    {
+        if ($this->tertiaryVirtualCollection === null) {
+            return new BazCollection($this->getCollection());
+        }
+
+        return $this->tertiaryVirtualCollection;
     }
 
     public function testCreateObject()
@@ -226,7 +244,7 @@ class SupportCollectionTest extends AbstractCollectionTest
         );
 
         $collection->setVirtualizationGroup(array(
-           $this->getVirtualCollection()->getAlias()
+            $this->getVirtualCollection()->getAlias()
         ));
 
         $this->assertEquals(
@@ -238,6 +256,31 @@ class SupportCollectionTest extends AbstractCollectionTest
         $this->assertTrue(
             $collection->find()->current() instanceof Foo,
             "find()->current() should return an instance of Foo"
+        );
+
+        // Test more than 1 element into group
+
+        $this->getCollection()->setVirtualizationGroup();
+
+        $this->getTertiaryVirtualCollection()->insert(array(
+            'baz' => 'qux'
+        ));
+
+        $this->assertEquals(
+            $collection->count(),
+            3,
+            "count() should return 2"
+        );
+
+        $collection->setVirtualizationGroup(array(
+            $this->getVirtualCollection()->getAlias(),
+            $this->getSecondaryVirtualCollection()->getAlias()
+        ));
+
+        $this->assertEquals(
+            $collection->count(),
+            2,
+            "count() should return 2"
         );
     }
 }
