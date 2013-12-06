@@ -3,10 +3,8 @@
 namespace MongoDbVirtualCollections\Model;
 
 use Countable;
-use InvalidArgumentException;
 use Iterator;
 use MongoCursor;
-use Zend\Stdlib\Hydrator\HydratorInterface;
 
 /**
  * Class HydratingMongoCursor
@@ -15,38 +13,23 @@ use Zend\Stdlib\Hydrator\HydratorInterface;
 class HydratingMongoCursor implements Countable, Iterator
 {
     /**
-     * @var \MongoCursor
+     * @var MongoCursor
      */
     protected $cursor;
 
     /**
-     * @var \Zend\Stdlib\Hydrator\HydratorInterface
+     * @var AbstractCollection
      */
-    protected $hydrator;
-
-    /**
-     * @var object
-     */
-    protected $prototype;
+    protected $collection;
 
     /**
      * @param MongoCursor $cursor
-     * @param HydratorInterface $hydrator
-     * @param AbstractObject $prototype
-     * @throws InvalidArgumentException
+     * @param AbstractCollection $collection
      */
-    public function __construct(MongoCursor $cursor, HydratorInterface $hydrator, AbstractObject $prototype)
+    public function __construct(MongoCursor $cursor, AbstractCollection $collection)
     {
         $this->cursor = $cursor;
-        $this->hydrator = $hydrator;
-
-        if (!($prototype instanceof AbstractObject)) {
-            throw new InvalidArgumentException(sprintf(
-                'Prototype must be an instance of AbstractObject; received "%s"',
-                gettype($prototype)
-            ));
-        }
-        $this->prototype = $prototype;
+        $this->collection = $collection;
     }
 
     /**
@@ -58,19 +41,11 @@ class HydratingMongoCursor implements Countable, Iterator
     }
 
     /**
-     * @return HydratorInterface
+     * @return AbstractCollection
      */
-    public function getHydrator()
+    public function getCollection()
     {
-        return $this->hydrator;
-    }
-
-    /**
-     * @return object
-     */
-    public function getPrototype()
-    {
-        return $this->prototype;
+        return $this->collection;
     }
 
     /**
@@ -82,7 +57,7 @@ class HydratingMongoCursor implements Countable, Iterator
     }
 
     /**
-     * @return object
+     * @return AbstractObject
      */
     public function current()
     {
@@ -91,7 +66,7 @@ class HydratingMongoCursor implements Countable, Iterator
             return $result;
         }
 
-        return $this->hydrator->hydrate($result, clone $this->getPrototype());
+        return $this->collection->createObjectFromRaw($result);
     }
 
     /**

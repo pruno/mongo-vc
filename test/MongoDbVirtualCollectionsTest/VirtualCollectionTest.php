@@ -208,45 +208,4 @@ class VirtualCollectionTest extends AbstractCollectionTest
             "delete() affected the wrong virtual collection"
         );
     }
-
-    /**
-     * @depends testInsert
-     */
-    public function testAgnosticGetById()
-    {
-        $idFoo = new \MongoId();
-        $idBar = new \MongoId();
-
-        $this->getCollection()->insert(array(
-            '_id' => $idFoo,
-            'foo' => 'bar'
-        ));
-
-        $this->getSecondaryVirtualCollection()->insert(array(
-            '_id' => $idBar,
-            'bar' => 'foo'
-        ));
-
-        // Test whitout primary field casting
-        $this->assertTrue(
-            $this->getSupportCollection()->findById($idFoo) instanceof Foo,
-            "get() should return an instance of Foo"
-        );
-
-        $this->assertTrue(
-            $this->getSupportCollection()->findById($idBar) instanceof Bar,
-            "get() should return an instance of Bar"
-        );
-
-        // primary field casting is demanded to the model
-        $this->assertTrue(
-            $this->getSupportCollection()->findById((string) $idFoo) instanceof Foo,
-            "get() should return an instance of Foo"
-        );
-
-        $this->assertTrue(
-            $this->getSupportCollection()->findById((string) $idBar) instanceof Bar,
-            "get() should return an instance of Bar"
-        );
-    }
 }

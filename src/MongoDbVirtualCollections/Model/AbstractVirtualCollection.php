@@ -82,16 +82,4 @@ abstract class AbstractVirtualCollection extends AbstractCollection
 
         return $set;
     }
-
-    /**
-     * @param array $data
-     * @return object
-     */
-    public function createObjectFromRaw(array $data)
-    {
-        return $this->getHydrator()->hydrate(
-            $data,
-            $this->createObject()
-        );
-    }
 }
