@@ -113,9 +113,13 @@ abstract class AbstractTestCase extends TestCase implements ServiceLocatorAwareI
         return $client->selectDB($config['database']);
     }
 
+    /**
+     * @param mixed $subject
+     * @param string $message
+     */
     public function assertString($subject, $message = '')
     {
-        return $this->assertTrue(
+        $this->assertTrue(
             is_string($subject) && $subject,
             $message
         );

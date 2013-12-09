@@ -20,7 +20,7 @@ abstract class AbstractVirtualCollection extends AbstractCollection
     /**
      * @var string
      */
-    protected $alias = null;
+    const ALIAS = null;
 
     /**
      * @param AbstractSupportCollection $supportCollection
@@ -29,19 +29,15 @@ abstract class AbstractVirtualCollection extends AbstractCollection
     {
         $this->supportCollection = $supportCollection;
         $this->collection = $this->supportCollection->getCollection();
-        $this->supportCollection->registerVirtualCollection($this);
+        $this->supportCollection->registerVirtualCollection($this->getAlias(), $this);
     }
 
     /**
-     * @return null|string
+     * @return string
      */
     public function getAlias()
     {
-        if ($this->alias === null) {
-            $this->alias = get_class($this);
-        }
-
-        return $this->alias;
+        return static::ALIAS ? static::ALIAS : __CLASS__;
     }
 
     /**

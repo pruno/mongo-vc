@@ -14,7 +14,7 @@ class BazCollection extends AbstractVirtualCollection
     /**
      * @var string
      */
-    protected $alias = 'Bazs';
+    const ALIAS = 'Bazs';
 
     /**
      * @return Baz
