@@ -14,7 +14,7 @@ class FooCollection extends AbstractVirtualCollection
     /**
      * @var string
      */
-    protected $alias = 'Foos';
+    const ALIAS = 'Foos';
 
     /**
      * @return Foo

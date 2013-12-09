@@ -2,14 +2,22 @@
 
 namespace MongoDbVirtualCollections\Model;
 
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorAwareInterface;
+use Zend\ServiceManager\ServiceLocatorAwareTrait;
 use Zend\Stdlib\ArrayObject;
+use \Closure;
+use \InvalidArgumentException;
+use \RuntimeException;
 
 /**
  * Class AbstractSupportCollection
  * @package MongoDbVirtualCollectionsTest\Model
  */
-abstract class AbstractSupportCollection extends AbstractCollection
+abstract class AbstractSupportCollection extends AbstractCollection implements ServiceLocatorAwareInterface
 {
+    use ServiceLocatorAwareTrait;
+
     /**
      * @var string
      */
@@ -50,11 +58,54 @@ abstract class AbstractSupportCollection extends AbstractCollection
     }
 
     /**
-     * @param AbstractVirtualCollection $virtualCollection
+     * @param string $alias
+     * @param AbstractVirtualCollection|FactoryInterface|Closure|string $virtualCollection
+     * @throws InvalidArgumentException
      */
-    public function registerVirtualCollection(AbstractVirtualCollection $virtualCollection)
+    public function registerVirtualCollection($alias, $virtualCollection)
     {
-        $this->virtualCollections[$virtualCollection->getAlias()] = $virtualCollection;
+        if (
+            !$virtualCollection instanceof AbstractVirtualCollection
+            && !$virtualCollection instanceof FactoryInterface
+            && !$virtualCollection instanceof Closure
+            && $virtualCollection !== null
+        ) {
+            throw new InvalidArgumentException(
+                "\$virtualCollection should either be an instance of AbstractVirtualCollection, FactoryInterface, Closure or null"
+            );
+        }
+
+        $this->virtualCollections[$alias] = $virtualCollection;
+    }
+
+    /**
+     * @param string $alias
+     * @return AbstractVirtualCollection
+     * @throws RuntimeException
+     */
+    public function getRegisteredVirtualCollection($alias)
+    {
+        if (!array_key_exists($alias, $this->virtualCollections)) {
+            return null;
+        }
+
+        if ($this->virtualCollections[$alias] instanceof AbstractVirtualCollection) {
+            return $this->virtualCollections[$alias];
+        } elseif ($this->virtualCollections[$alias] instanceof FactoryInterface) {
+            $virtualCollection = $this->virtualCollections[$alias] = $this->virtualCollections[$alias]->createService($this->getServiceLocator());
+        } elseif ($this->virtualCollections[$alias] instanceof Closure) {
+            $virtualCollection = $this->virtualCollections[$alias] = call_user_func($this->virtualCollections[$alias]);
+        } elseif ($this->virtualCollections[$alias] === null) {
+            $virtualCollection = $this->getServiceLocator()->get($alias);
+        } else {
+            throw new RuntimeException("Inconsistent alias type");
+        }
+
+        if (!$virtualCollection instanceof AbstractVirtualCollection) {
+            throw new RuntimeException("getRegisteredVirtualCollection was unable to fetch or create an instance of AbstractVirtualCollection for alias '{$alias}'");
+        }
+
+        return $virtualCollection;
     }
 
     /**
@@ -93,20 +144,23 @@ abstract class AbstractSupportCollection extends AbstractCollection
     /**
      * @param $raw array
      * @return AbstractObject
-     * @throws \Exception
+     * @throws RuntimeException
      */
     public function createObjectFromRaw(array $raw)
     {
         if (!array_key_exists(static::CLASS_NAME_FIELD, $raw)) {
-            throw new \Exception("Raw data is missing the className field \"".static::CLASS_NAME_FIELD."\"");
+            throw new RuntimeException("Raw data is missing the className field \"".static::CLASS_NAME_FIELD."\"");
         }
 
         if (!array_key_exists($raw[static::CLASS_NAME_FIELD], $this->virtualCollections)) {
-            throw new \Exception("Alias class {$raw[static::CLASS_NAME_FIELD]} could not be resolved into a virtual collection");
+            throw new RuntimeException("Alias {$raw[static::CLASS_NAME_FIELD]} could not be resolved into a virtual collection");
         }
 
-        /* @var $virtualCollection AbstractVirtualCollection */
-        $virtualCollection = $this->virtualCollections[$raw[static::CLASS_NAME_FIELD]];
+        $virtualCollection = $this->getRegisteredVirtualCollection($raw[static::CLASS_NAME_FIELD]);
+
+        if (!$virtualCollection instanceof AbstractVirtualCollection) {
+            throw new RuntimeException("Alias {$raw[static::CLASS_NAME_FIELD]} could not be resolved into a virtual collection");
+        }
 
         return $virtualCollection->createObjectFromRaw($raw);
     }

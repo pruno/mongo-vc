@@ -14,7 +14,7 @@ class BarCollection extends AbstractVirtualCollection
     /**
      * @var string
      */
-    protected $alias = 'Bars';
+    const ALIAS = 'Bars';
 
     /**
      * @return Bar

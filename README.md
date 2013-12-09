@@ -1,4 +1,4 @@
-ZF2-MongoDB-VirtualCollections 0.3.0
+ZF2-MongoDB-VirtualCollections 0.4.0
 ====================================
 
 Zend Framework 2 Module for MongoDB operations abstraction.
@@ -158,7 +158,7 @@ Be aware: you can't set attribute at runtime if not declared inside the class, s
  
 ### Support collections
 
-By theirself useless, yet fundamental to let the VirtualCollection works.  
+By their self useless, yet fundamental to let the VirtualCollection works.  
 SupportCollections are the user-space representation of the real collections on the database while working in a virtual environment.  
 They should never declare their own object prototype since they don't represent a set similar objects.  
 AbstractSupportCollection (which you must extend) directly extend from AbstractCollection so, like previously, you must define the $collectionName private property.
@@ -192,13 +192,16 @@ AbstractVirtualCollection (which you must extend) directly extend from AbstractC
     $burrito = new Burrito($serviceManager->get('Application\Model\SupportCollection'));
 
 Virtual Collections must declare their own object prototype (refer to the simple collection section).  
+
+#### Aliasing
+
 When storing an object belonging to a virtual collection the module will add an hidden attribute to the real database object identifying at which collection the object is associated.  
-IMPORTANT: By default the collection class full qualified name is used, however this behaviour is discouraged, because a slightly change in your application code structure may compromise your pre-existing data. In order to avoid this, virtual collections class names can be internally aliased, for you is simple as declaring the alias private property in the collection.
+IMPORTANT: By default the collection class full qualified name is used, however this behaviour is discouraged, because a slightly change in your application code structure may compromise your pre-existing data. In order to avoid this, virtual collections class names can be internally aliased, for you is simple as declaring the ALIAS constant in the collection.
 
     /**
      * @var string
      */
-    protected $alias = 'burritos';
+    const ALIAS = 'burritos';
 
 
 ### VirtualCollectionAbstractFactory
@@ -235,7 +238,26 @@ Supported agnostic methods are:
     
 IMPORTANT:  
 To achieve this result, the support collection resolve virtual collections aliases to their class. In order to do this, those collections must be previously registered (at runtime) to the support collection.  
-Internally, a virtual collection register itself at creation, so: you must guarantee that all the virtual collection in which the object may be contained have been instantiated at least one time per request before attempting to perform an agnostic query. If not, an exception will be throned due to the fact that the support collection ignore which class should represent the fetched data.
+Internally, a virtual collection register itself at creation, so: you must guarantee that all the virtual collection in which the object may be contained have been registered before attempting to perform an agnostic query. If not, an exception will be throned due to the fact that the support collection ignore which class should represent the fetched data.  
+
+
+#### Virtual Collection registration alternatives
+
+As stated above the simplest way of registering a virtual collection is instantiating it. For large code-base, registering all the model by initialisation can result in a useless waste of memory, cpu and time.  
+Using the method  
+
+    AbstractSupportCollection::registerVirtualCollection(string $alias, mixed $virtualCollection)  
+    
+it's possible to register a collection in though the following methods:
+
+    - An instance of the collection (hardly useful, the collection register itself upon creation).
+    - A factory implementing Zend\ServiceManager\FactoryInterface.
+    - A Closure.
+    - NULL. The alias is used to query directly the service locator.
+    
+Except for the first method all of those will request / initialise the desired collection with lazy loading.  
+
+
 
 #### Virtualization group
 
