@@ -13,13 +13,18 @@ use Zend\ServiceManager\ServiceLocatorInterface;
 class FooCollectionServiceFactory implements FactoryInterface
 {
     /**
+     * @var string
+     */
+    const SUPPORT_COLLECTION_SM_ALIAS = 'testSupportCollection';
+
+    /**
      * @param ServiceLocatorInterface $serviceLocator
      * @return FooCollection
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
         /* @var $supportCollection \MongoDbVirtualCollectionsTest\Concrete\SupportCollection\SupportCollection */
-        $supportCollection = $serviceLocator->get('testSupportCollection');
+        $supportCollection = $serviceLocator->get(self::SUPPORT_COLLECTION_SM_ALIAS);
 
         $fooCollection = new FooCollection($supportCollection);
 

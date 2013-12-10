@@ -1,4 +1,4 @@
-ZF2-MongoDB-VirtualCollections 0.4.0
+ZF2-MongoDB-VirtualCollections 0.4.1
 ====================================
 
 Zend Framework 2 Module for MongoDB operations abstraction.
@@ -253,7 +253,7 @@ it's possible to register a collection in though the following methods:
     - An instance of the collection (hardly useful, the collection register itself upon creation).
     - A factory implementing Zend\ServiceManager\FactoryInterface.
     - A Closure.
-    - NULL. The alias is used to query directly the service locator.
+    - A string representing the service locator alias to whom the collection or a factory is registered.
     
 Except for the first method all of those will request / initialise the desired collection with lazy loading.  
 

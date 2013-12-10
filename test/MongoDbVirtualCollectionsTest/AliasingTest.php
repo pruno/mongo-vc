@@ -38,12 +38,12 @@ class Aliasingtest extends AbstractTestCase
 
         /* @var $serviceManager \Zend\ServiceManager\ServiceManager */
         $serviceManager = $this->getServiceLocator();
-        $serviceManager->setService('testSupportCollection', $supportCollection);
+        $serviceManager->setService(FooCollectionServiceFactory::SUPPORT_COLLECTION_SM_ALIAS, $supportCollection);
 
         $supportCollection->setServiceLocator($serviceManager);
 
         $factory = new FooCollectionServiceFactory($serviceManager);
-        $alias = 'testAlias';
+        $alias = FooCollection::ALIAS;
 
         $supportCollection->registerVirtualCollection($alias, $factory);
 
@@ -57,7 +57,7 @@ class Aliasingtest extends AbstractTestCase
     {
         $supportCollection = $this->createSupportCollection();
 
-        $alias = 'testAlias';
+        $alias = FooCollection::ALIAS;
 
         $supportCollection->registerVirtualCollection($alias, function() use ($supportCollection){
             return new FooCollection($supportCollection);
@@ -74,15 +74,16 @@ class Aliasingtest extends AbstractTestCase
         $supportCollection = $this->createSupportCollection();
         $virtualCollection = new FooCollection($supportCollection);
 
-        $alias = 'testAlias';
+        $alias = FooCollection::ALIAS;
+        $smAlias = 'testSMAlias';
 
         /* @var $serviceManager \Zend\ServiceManager\ServiceManager */
         $serviceManager = $this->getServiceLocator();
-        $serviceManager->setService($alias, $virtualCollection);
+        $serviceManager->setService($smAlias, $virtualCollection);
 
         $supportCollection->setServiceLocator($serviceManager);
 
-        $supportCollection->registerVirtualCollection($alias, null);
+        $supportCollection->registerVirtualCollection($alias, $smAlias);
 
         $this->assertTrue(
             $supportCollection->getRegisteredVirtualCollection($alias) instanceof FooCollection,
