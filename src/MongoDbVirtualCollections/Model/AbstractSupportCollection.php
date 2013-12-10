@@ -68,10 +68,13 @@ abstract class AbstractSupportCollection extends AbstractCollection implements S
             !$virtualCollection instanceof AbstractVirtualCollection
             && !$virtualCollection instanceof FactoryInterface
             && !$virtualCollection instanceof Closure
-            && $virtualCollection !== null
+            && (
+                !is_string($virtualCollection)
+                || !$virtualCollection
+            )
         ) {
             throw new InvalidArgumentException(
-                "\$virtualCollection should either be an instance of AbstractVirtualCollection, FactoryInterface, Closure or null"
+                "\$virtualCollection should either be an instance of AbstractVirtualCollection, FactoryInterface, Closure or a non empty string"
             );
         }
 
@@ -95,8 +98,8 @@ abstract class AbstractSupportCollection extends AbstractCollection implements S
             $virtualCollection = $this->virtualCollections[$alias] = $this->virtualCollections[$alias]->createService($this->getServiceLocator());
         } elseif ($this->virtualCollections[$alias] instanceof Closure) {
             $virtualCollection = $this->virtualCollections[$alias] = call_user_func($this->virtualCollections[$alias]);
-        } elseif ($this->virtualCollections[$alias] === null) {
-            $virtualCollection = $this->getServiceLocator()->get($alias);
+        } elseif (is_string($this->virtualCollections[$alias]) && $this->virtualCollections[$alias]) {
+            $virtualCollection = $this->getServiceLocator()->get($this->virtualCollections[$alias]);
         } else {
             throw new RuntimeException("Inconsistent alias type");
         }
