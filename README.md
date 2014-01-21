@@ -18,6 +18,7 @@ This Module aims to provide:
  - A simple Collection/Object extensible and hydratable user-space abstraction
  - A pattern to represent a unique mongo collection as more user-space collections (follow-up to know more)
  
+ATTENTION: since version 0.5.0 the library is not compatible with older version. (Namespace and Config nodes have changed).
  
 About Virtual Collections
 ---
@@ -78,7 +79,7 @@ How To's
 ---
 
 Preface: This module doesn't provide any concrete class. You must declare all of your classes extending from the provided abstracts.  
-Every Abstract class may declare some abstract functions, those will need to defined in order to provide the information needed from the module to work properly.
+Every Abstract class may declare some abstract functions, those will need to be defined in order to provide the information needed from the module to work properly.
 
 
 ### MongoDbAbstractServiceFactory
@@ -113,7 +114,7 @@ In order to declare a collection you need to extend from AbstractCollection, whi
     
 What you must to declare in your class:
 
-1 - The name you want to assign it on the database
+1 - The name you want to assign to the collection on the database
 
     /**
      * @var string
@@ -135,7 +136,7 @@ What you must to declare in your class:
 
 In order to declare an object you need to extend from AbstractObject, which require an AbstractCollection instance.
 
-What you must to declare in your class:  
+What you need to declare in your class:  
 
 An arbitrary number of public attribute (those will describe your object).  
 The _id property is already declared in the parent.  
@@ -159,7 +160,7 @@ Be aware: you can't set attribute at runtime if not declared inside the class, s
  
 ### Support collections
 
-By their self useless, yet fundamental to let the VirtualCollection works.  
+By their self useless, yet fundamental to let the virtualization works.  
 SupportCollections are the user-space representation of the real collections on the database while working in a virtual environment.  
 They should never declare their own object prototype since they don't represent a set similar objects.  
 AbstractSupportCollection (which you must extend) directly extend from AbstractCollection so, like previously, you must define the $collectionName private property.
@@ -168,7 +169,7 @@ AbstractSupportCollection (which you must extend) directly extend from AbstractC
 ### CollectionAbstractFactory
 
 With this factory both simple and support collection can be created.  
-This factory requires that you'r using also MongoDbAbstractServiceFactory to create the drivers.  
+This factory requires that you are also using MongoDbAbstractServiceFactory to create the drivers.  
 Register the factory under the ServiceManager than configure as follow:
 
     'mongovc' => array(
@@ -196,7 +197,7 @@ Virtual Collections must declare their own object prototype (refer to the simple
 
 #### Aliasing
 
-When storing an object belonging to a virtual collection the module will add an hidden attribute to the real database object identifying at which collection the object is associated.  
+When storing an object belonging to a virtual collection the library will add an hidden attribute to the real database object identifying at which collection the object is associated.  
 IMPORTANT: By default the collection class full qualified name is used, however this behaviour is discouraged, because a slightly change in your application code structure may compromise your pre-existing data. In order to avoid this, virtual collections class names can be internally aliased, for you is simple as declaring the ALIAS constant in the collection.
 
     /**
@@ -231,11 +232,7 @@ In order to perform an agnostic query the Support Collection must be used.
     $serviceManager->get('Application\Model\SpaceShuttlesCollection');
     $object = $serviceManager->get('Application\Model\SupportCollection')->findById($id);
     
-Supported agnostic methods are:
-
-- find()
-- findOne()
-- findById()
+Agnostic queries support all base read functions.
     
 IMPORTANT:  
 To achieve this result, the support collection resolve virtual collections aliases to their class. In order to do this, those collections must be previously registered (at runtime) to the support collection.  
@@ -249,11 +246,11 @@ Using the method
 
     AbstractSupportCollection::registerVirtualCollection(string $alias, mixed $virtualCollection)  
     
-it's possible to register a collection in though the following methods:
+it's possible to register a collection though the following methods:
 
     - An instance of the collection (hardly useful, the collection register itself upon creation).
-    - A factory implementing Zend\ServiceManager\FactoryInterface.
     - A Closure.
+    - A factory implementing Zend\ServiceManager\FactoryInterface.
     - A string representing the service locator alias to whom the collection or a factory is registered.
     
 Except for the first method all of those will request / initialise the desired collection with lazy loading.  
@@ -295,6 +292,13 @@ Be careful: in order to grant the major number of functionality of the collectio
 
         return $hydrator;
     }
+
+### Custom _id
+
+Sometimes an application will need to generate new object ids with a custom logic or simply avoiding using the \MongoId object.  
+If you are new to this practice this link might be useful: [The id field](http://docs.mongodb.org/manual/core/document/#the-id-field)
+
+In order to achieve this, AbstractCollection::createHydrator() and AbstractCollection::createIdentifier() must be overwritten.
 
 
 License
