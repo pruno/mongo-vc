@@ -95,7 +95,7 @@ abstract class AbstractCollection
      */
     public function createIdentifier($id = null)
     {
-        return new \MongoId($id);
+        return $id instanceof \MongoId ? $id : new \MongoId($id);
     }
 
     /**
@@ -108,7 +108,7 @@ abstract class AbstractCollection
             foreach ($id as &$val) {
                 $val = $this->prepareIdentifier($val);
             }
-        } elseif (!$id instanceof \MongoId) {
+        } else {
             $id = $this->createIdentifier($id);
         }
 
