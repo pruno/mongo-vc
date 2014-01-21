@@ -299,7 +299,7 @@ Be careful: in order to grant the major number of functionality of the collectio
 License
 -------
 
-This software is released under the New-BSD License.
+This software is released under the BSD-3-Clause License.
 
 
 How to contribute

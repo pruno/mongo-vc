@@ -1,7 +1,7 @@
 <phpunit bootstrap="./Bootstrap.php" colors="true">
     <testsuites>
-        <testsuite name="Mongo Db Virtual Collections Module Tests">
-            <directory>MongoDbVirtualCollectionsTest</directory>
+        <testsuite name="Mongo Virtual Collections Module Tests">
+            <directory>MongovcTests</directory>
         </testsuite>
     </testsuites>
 </phpunit>

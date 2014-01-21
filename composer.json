@@ -1,17 +1,17 @@
 {
-    "name": "pruno/ZF2-MongoDB-VirtualCollections",
-    "description": "Zend Framework 2 Module for handle MongoDB Virtual Collections and Objects",
+    "name": "pruno/mongo-vc",
+    "description": "Zend Framework 2 Module for handle MongoDB Virtual Collections",
     "type": "library",
     "license": "BSD-3-Clause",
     "keywords": [
         "zf2",
         "mongodb"
     ],
-    "homepage": "https://github.com/pruno/ZF2-MongoDB-VirtualCollections",
+    "homepage": "https://github.com/pruno/mongo-vc",
     "autoload": {
         "psr-0": {
-            "MongoDbVirtualCollections": "src/",
-            "MongoDbVirtualCollectionsTest": "test/"
+            "Mongovc": "src/",
+            "MongovcTests": "test/"
         },
         "classmap": [
             "./"
