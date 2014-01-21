@@ -74,6 +74,8 @@ abstract class AbstractVirtualCollection extends AbstractCollection
      */
     protected function prepareSet(array $set)
     {
+        parent::prepareSet($set);
+
         $set[$this->getClassNameField()] = $this->getAlias();
 
         return $set;

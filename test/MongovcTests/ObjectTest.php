@@ -83,9 +83,16 @@ class ObjectTest extends AbstractTestCase
             "save() failed to write to database"
         );
 
+        // the _id field will be set by mongo, so it will differ
+        $testData1 = $object->toArray();
+        unset($testData1['_id']);
+
+        $testData2 = $this->getCollection()->find()->current()->toArray();
+        unset($testData2['_id']);
+
         $this->assertEquals(
-            $object->toArray(),
-            $this->getCollection()->find()->current()->toArray(),
+            $testData1,
+            $testData2,
             'selecting after save() should return the same data array'
         );
     }

@@ -134,6 +134,10 @@ abstract class AbstractCollection
      */
     protected function prepareSet(array $set)
     {
+        if (array_key_exists('_id', $set) && $set['_id'] === null) {
+            unset($set['_id']);
+        }
+
         return $set;
     }
 
@@ -245,11 +249,7 @@ abstract class AbstractCollection
             '_id' => $object->_id
         );
 
-        $success = $this->collection->update(
-            $this->prepareCriteria($criteria),
-            $this->prepareSet($set),
-            array_merge(array('upsert' => true), $options)
-        );
+        $success = $this->update($criteria, $set, $options);
 
         $this->getHydrator()->hydrate($set, $object);
 
@@ -287,6 +287,18 @@ abstract class AbstractCollection
     }
 
     /**
+     * @param array $data
+     * @return AbstractObject
+     */
+    public function createObjectFromRaw(array $data)
+    {
+        return $this->getHydrator()->hydrate(
+            $data,
+            $this->createObject()
+        );
+    }
+
+    /**
      * @param string|\MongoId $id
      * @return AbstractObject|null
      */
@@ -298,14 +310,15 @@ abstract class AbstractCollection
     }
 
     /**
-     * @param array $data
-     * @return AbstractObject
+     * @param string $fieldName
+     * @param array $criteria
+     * @return array
      */
-    public function createObjectFromRaw(array $data)
+    public function distinct($fieldName, $criteria = array())
     {
-        return $this->getHydrator()->hydrate(
-            $data,
-            $this->createObject()
+        return $this->getCollection()->distinct(
+            $fieldName,
+            $this->prepareCriteria($criteria)
         );
     }
 }

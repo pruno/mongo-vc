@@ -16,7 +16,7 @@ class MongoIdStrategy implements StrategyInterface
      */
     public function extract($value)
     {
-        return new \MongoId($value);
+        return $value !== null ? new \MongoId($value) : null;
     }
 
     /**

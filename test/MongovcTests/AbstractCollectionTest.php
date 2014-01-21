@@ -360,4 +360,24 @@ abstract class AbstractCollectionTest extends AbstractTestCase
 
         $this->assertEquals((string) $data['_id'], $object->offsetGet('_id'), "_id field does not match with the requested one");
     }
+
+    /**
+     * @depends testInsert
+     */
+    public function testDistinct()
+    {
+        foreach (array('bar', 'bar2', 'bar', 'bar3', 'bar', 'bar2') as $val) {
+            $this->getCollection()->insert(array(
+                'foo' => $val
+            ));
+        }
+
+        $distinct = $this->getCollection()->distinct('foo');
+
+        $this->assertEquals(count($distinct), 3, "distinct() should return an array with 3 elements");
+
+        $distinct = $this->getCollection()->distinct('foo', array('foo' => array('$in' => array('bar', 'bar2'))));
+
+        $this->assertEquals(count($distinct), 2, "distinct() should return an array with 2 elements");
+    }
 }
