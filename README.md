@@ -1,15 +1,16 @@
-ZF2-MongoDB-VirtualCollections 0.4.1
-====================================
+Mongo Virtual Collections 0.5.0
+===
 
-Zend Framework 2 Module for MongoDB operations abstraction.
+Zend Framework 2 Module for MongoDB operations abstraction and virtualization.
 
 Master: [![Build Status](https://travis-ci.org/pruno/ZF2-MongoDB-VirtualCollections.png?branch=master)](https://travis-ci.org/pruno/ZF2-MongoDB-VirtualCollections)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Develop: [![Build Status](https://travis-ci.org/pruno/ZF2-MongoDB-VirtualCollections.png?branch=develop)](https://travis-ci.org/pruno/ZF2-MongoDB-VirtualCollections)
 
 
 
 Introduction
-------------
+---
 
 This Module aims to provide:
 
@@ -19,7 +20,7 @@ This Module aims to provide:
  
  
 About Virtual Collections
--------------------
+---
 
 Virtualising multiple collections on top of a single real one the application is able (in addition to all the usual actions) to perform "Agnostic" queries.  
 Perform Agnostic query means: querying the database (with or without a criteria set) for one or more object without knowing their kind.
@@ -49,7 +50,7 @@ Here's another scenario:
 
 
 Installation
-------------
+---
 
 Using [composer](http://getcomposer.org/):
 
@@ -57,7 +58,7 @@ Add the following to your `composer.json` file:
 
     "require": {
         ...
-        "pruno/ZF2-MongoDB-VirtualCollections": ">=0.2.0",
+        "pruno/mongo-vc": "0.5.*",
     },
     ...
     "repositories": [
@@ -74,7 +75,7 @@ Alternately with git submodules:
 
  
 How To's
-------
+---
 
 Preface: This module doesn't provide any concrete class. You must declare all of your classes extending from the provided abstracts.  
 Every Abstract class may declare some abstract functions, those will need to defined in order to provide the information needed from the module to work properly.
@@ -84,7 +85,7 @@ Every Abstract class may declare some abstract functions, those will need to def
 
 Register the factory under the ServiceManager than configure as follow:
 
-    'mongodb_virtual_collections' => array(
+    'mongovc' => array(
         'drivers' => array(
             'myDriver1Alias' => array(
                 'hosts' => 'mo1.my.com:27017,mo2.my.com:27018',     // Comma separated list of hosts
@@ -170,7 +171,7 @@ With this factory both simple and support collection can be created.
 This factory requires that you'r using also MongoDbAbstractServiceFactory to create the drivers.  
 Register the factory under the ServiceManager than configure as follow:
 
-    'mongodb_virtual_collections' => array(
+    'mongovc' => array(
         'collections' => array(
             // Class FQN                           => driver name
             'Application\Model\BurritosCollection' => 'myDriver1Alias', 
@@ -209,7 +210,7 @@ IMPORTANT: By default the collection class full qualified name is used, however 
 This factory requires that your using also MongoDbAbstractServiceFactory to create the drivers and CollectionAbstractFactory to create support collections.  
 Register the factory under the ServiceManager than configure as follow:
 
-    'mongodb_virtual_collections' => array(
+    'mongovc' => array(
         'virtual_collections' => array(
             // Class FQN                           => support collection alias
             'Application\Model\BurritosCollection' => 'Application\Model\SupportCollection', 
@@ -297,12 +298,12 @@ Be careful: in order to grant the major number of functionality of the collectio
 
 
 License
--------
+---
 
 This software is released under the BSD-3-Clause License.
 
 
 How to contribute
------------------
+---
  
 Please do. Fork it and send pull requests or open an issue if required.
