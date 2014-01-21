@@ -83,16 +83,6 @@ abstract class AbstractObject implements Countable,
     }
 
     /**
-     * @return array
-     */
-    protected function getPrimaryCriteria()
-    {
-        return array(
-            '_id' => $this->collection->createIdentifier($this->_id)
-        );
-    }
-
-    /**
      * @return bool
      */
     public function objectExistsInDatabase()
@@ -118,9 +108,9 @@ abstract class AbstractObject implements Countable,
             throw new \Exception("The asset must exists in database to be deleted");
         }
 
-        $this->collection->remove(
-            $this->getPrimaryCriteria()
-        );
+        $this->collection->remove(array(
+            '_id' => $this->collection->createIdentifier($this->_id)
+        ));
     }
 
     /**
