@@ -169,15 +169,6 @@ abstract class AbstractSupportCollection extends AbstractCollection implements S
     }
 
     /**
-     * @param string|\MongoId $id
-     * @return null|AbstractObject
-     */
-    public function findById($id)
-    {
-        return $this->findOne(array('_id' => $id));
-    }
-
-    /**
      * @param array $criteria
      * @return AbstractObject|null
      */
