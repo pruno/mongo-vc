@@ -1,5 +1,5 @@
 <?php
-namespace MongoDbVirtualCollectionsTest;
+namespace MongovcTests;
 
 use Zend\Loader\AutoloaderFactory;
 use Zend\Mvc\Service\ServiceManagerConfig;
@@ -41,8 +41,9 @@ class Bootstrap
 
         static::initAutoloader();
 
-        // use ModuleManager to load this module and it's dependencies
+        // use ModuleManager to load dependencies
         $baseConfig = array(
+            'modules' => array(),
             'module_listener_options' => array(
                 'module_paths' => explode(PATH_SEPARATOR, $zf2ModulePaths),
             ),
@@ -57,6 +58,13 @@ class Bootstrap
         $serviceManager->setService('Config', array_merge($serviceManager->get('Config'), $config));
         $serviceManager->setAllowOverride(false);
         static::$serviceManager = $serviceManager;
+
+        /**
+         * Start output buffering, if enabled
+         */
+        if (defined('TESTS_ZEND_OB_ENABLED') && constant('TESTS_ZEND_OB_ENABLED')) {
+            ob_start();
+        }
     }
 
     public static function getServiceManager()
