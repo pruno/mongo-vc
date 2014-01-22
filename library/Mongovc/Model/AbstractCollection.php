@@ -69,7 +69,7 @@ abstract class AbstractCollection
     }
 
     /**
-     * @return HydratorInterface|null
+     * @return ArraySerializable
      */
     public function getHydrator()
     {
