@@ -12,7 +12,7 @@ Develop: [![Build Status](https://travis-ci.org/pruno/ZF2-MongoDB-VirtualCollect
 Introduction
 ---
 
-This Module aims to provide:
+This Library aims to provide:
 
  - An handy Service Abstract Factory for \MongoDB instances
  - A simple Collection/Object extensible and hydratable user-space abstraction
@@ -78,8 +78,8 @@ Alternately with git submodules:
 How To's
 ---
 
-Preface: This module doesn't provide any concrete class. You must declare all of your classes extending from the provided abstracts.  
-Every Abstract class may declare some abstract functions, those will need to be defined in order to provide the information needed from the module to work properly.
+Preface: This library doesn't provide any concrete class. You must declare all of your classes extending from the provided abstracts.
+Every Abstract class may declare some abstract functions, those will need to be defined in order to provide the information needed from the library to work properly.
 
 
 ### MongoDbAbstractServiceFactory
