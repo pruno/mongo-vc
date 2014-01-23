@@ -83,6 +83,11 @@ class ObjectTest extends AbstractTestCase
             "save() failed to write to database"
         );
 
+        $data = $object->toArray();
+
+        $this->assertString($data['_id'], "_id field should have been set as string after saving");
+        $this->assertTrue(strlen($data['_id']) == 24, "_id field should be 24 chars length");
+
         // the _id field will be set by mongo, so it will differ
         $testData1 = $object->toArray();
         unset($testData1['_id']);
