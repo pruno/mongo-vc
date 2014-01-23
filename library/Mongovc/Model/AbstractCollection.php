@@ -232,8 +232,23 @@ abstract class AbstractCollection
         return $this->collection->update(
             $this->prepareCriteria($criteria),
             $this->prepareSet($set),
-            array_merge(array('upsert' => true), $options)
+            $options
         );
+    }
+
+    /**
+     * @param array $set
+     * @param array $options
+     * @return array|bool
+     */
+    public function save(array &$set, array $options = array())
+    {
+        // passing a referenced variable to save will fail in update the content
+        $tmp = $this->prepareSet($set);
+        $result = $this->getCollection()->save($tmp, $options);
+        $set = $tmp;
+
+        return $result;
     }
 
     /**
@@ -245,11 +260,7 @@ abstract class AbstractCollection
     {
         $set = $this->getHydrator()->extract($object);
 
-        $criteria = array(
-            '_id' => $object->_id
-        );
-
-        $success = $this->update($criteria, $set, $options);
+        $success = $this->save($set, $options);
 
         $this->getHydrator()->hydrate($set, $object);
 
