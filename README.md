@@ -3,9 +3,9 @@ Mongo Virtual Collections 0.5.0
 
 Zend Framework 2 Module for MongoDB operations abstraction and virtualization.
 
-Master: [![Build Status](https://travis-ci.org/pruno/ZF2-MongoDB-VirtualCollections.png?branch=master)](https://travis-ci.org/pruno/ZF2-MongoDB-VirtualCollections)
+Master: [![Build Status](https://travis-ci.org/pruno/mongo-vc.png?branch=master)](https://travis-ci.org/pruno/mongo-vc)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Develop: [![Build Status](https://travis-ci.org/pruno/ZF2-MongoDB-VirtualCollections.png?branch=develop)](https://travis-ci.org/pruno/ZF2-MongoDB-VirtualCollections)
+Develop: [![Build Status](https://travis-ci.org/pruno/mongo-vc.png?branch=develop)](https://travis-ci.org/pruno/mongo-vc)
 
 
 
