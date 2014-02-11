@@ -10,7 +10,8 @@ use MongoCursor;
  * Class HydratingMongoCursor
  * @package Application\Model
  */
-class HydratingMongoCursor implements Countable, Iterator
+class HydratingMongoCursor implements Countable,
+                                      Iterator
 {
     /**
      * @var MongoCursor
@@ -104,6 +105,8 @@ class HydratingMongoCursor implements Countable, Iterator
         foreach ($this->cursor as $data) {
             $results[] = $this->current();
         }
+
+        $this->cursor->rewind();
 
         return $results;
     }

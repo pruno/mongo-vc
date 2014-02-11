@@ -6,10 +6,10 @@ use Zend\ServiceManager\AbstractFactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
- * Class MongoClientAbstractServiceFactory
- * @package Application\Service
+ * Class VirtualCollectionAbstractServiceFactory
+ * @package Mongovc\Service
  */
-class MongoDbAbstractServiceFactory implements AbstractFactoryInterface
+class VirtualCollectionAbstractServiceFactory implements AbstractFactoryInterface
 {
     /**
      * @var array
@@ -25,28 +25,28 @@ class MongoDbAbstractServiceFactory implements AbstractFactoryInterface
     public function canCreateServiceWithName(ServiceLocatorInterface $serviceLocator, $name, $requestedName)
     {
         $config = $this->getConfig($serviceLocator);
-
         if (empty($config)) {
             return false;
         }
 
-        return isset($config[$requestedName]);
+        return isset($config[$requestedName]) && is_string($config[$requestedName]);
     }
 
     /**
      * @param ServiceLocatorInterface $serviceLocator
      * @param string $name
      * @param string $requestedName
-     * @return \MongoClient
+     * @return \Mongovc\Model\AbstractCollection
      */
     public function createServiceWithName(ServiceLocatorInterface $serviceLocator, $name, $requestedName)
     {
         $config = $this->getConfig($serviceLocator)[$requestedName];
-        $hosts = array_key_exists('hosts', $config) ? $config['hosts'] : 'localhot:27017';
-        $credential = array_key_exists('username', $config) && array_key_exists('password', $config) ? "{$config['username']}:{$config['password']}@" : null;
-        $options = array_key_exists('options', $config) && is_array($config['options']) ? $config['options'] : array();
-        $client = new \MongoClient("mongodb://{$credential}{$hosts}", $options);
-        return $client->selectDB($config['database']);
+
+        $supportCollection = $serviceLocator->get($config);
+
+        $className = "\\{$requestedName}";
+
+        return new $className($supportCollection);
     }
 
     /**
@@ -65,7 +65,7 @@ class MongoDbAbstractServiceFactory implements AbstractFactoryInterface
 
         $config = $serviceLocator->get('Config');
 
-        foreach (array('mongovc', 'drivers') as $nodeIndex) {
+        foreach (array('mongovc', 'virtual_collections') as $nodeIndex) {
 
             if (!isset($config[$nodeIndex]) || !is_array($config[$nodeIndex])) {
                 return null;
