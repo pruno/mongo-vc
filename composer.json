@@ -10,8 +10,8 @@
     "homepage": "https://github.com/pruno/mongo-vc",
     "autoload": {
         "psr-0": {
-            "Mongovc": "src/",
-            "MongovcTests": "test/"
+            "Mongovc": "library/",
+            "MongovcTests": "tests/"
         },
         "classmap": [
             "./"

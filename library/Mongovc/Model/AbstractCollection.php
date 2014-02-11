@@ -2,9 +2,10 @@
 
 namespace Mongovc\Model;
 
+use Mongovc\Hydrator\ArraySerializable;
 use Mongovc\Hydrator\Strategy\MongoIdStrategy;
+use MongovcTests\Model\Object\Foo;
 use Zend\ServiceManager\ServiceLocatorAwareTrait;
-use Zend\Stdlib\Hydrator\ArraySerializable;
 use Zend\Stdlib\Hydrator\HydratorInterface;
 
 /**
@@ -16,7 +17,7 @@ abstract class AbstractCollection
     /**
      * @var \MongoCollection
      */
-    protected $collection;
+    protected $mongoCollection;
 
     /**
      * @var string
@@ -24,7 +25,7 @@ abstract class AbstractCollection
     protected $collectionName;
 
     /**
-     * @var AbstractObject
+     * @var ObjectInterface
      */
     protected $objectPrototype;
 
@@ -38,7 +39,7 @@ abstract class AbstractCollection
      */
     public function __construct(\MongoDB $mongoDb)
     {
-        $this->collection = $mongoDb->selectCollection($this->collectionName);
+        $this->mongoCollection = $mongoDb->selectCollection($this->collectionName);
     }
 
     /**
@@ -46,15 +47,15 @@ abstract class AbstractCollection
      */
     public function getCollectionName()
     {
-        return $this->collection->getName();
+        return $this->getMongoCollection()->getName();
     }
 
     /**
      * @return \MongoCollection
      */
-    public function getCollection()
+    public function getMongoCollection()
     {
-        return $this->collection;
+        return $this->mongoCollection;
     }
 
     /**
@@ -81,6 +82,35 @@ abstract class AbstractCollection
     }
 
     /**
+     * @return ObjectInterface
+     */
+    abstract protected function createObjectPrototype();
+
+    /**
+     * @return ObjectInterface
+     */
+    public function createObject()
+    {
+        if ($this->objectPrototype === null) {
+            $this->objectPrototype = $this->createObjectPrototype();
+        }
+
+        return clone $this->objectPrototype;
+    }
+
+    /**
+     * @param array $data
+     * @return ObjectInterface
+     */
+    public function createObjectFromRaw(array $data)
+    {
+        return $this->getHydrator()->hydrate(
+            $data,
+            $this->createObject()
+        );
+    }
+
+    /**
      * @param \MongoCursor $cursor
      * @return HydratingMongoCursor
      */
@@ -100,9 +130,9 @@ abstract class AbstractCollection
 
     /**
      * @param $id
-     * @return \MongoId
+     * @return \MongoId|array
      */
-    protected function prepareIdentifier($id)
+    public function prepareIdentifier($id)
     {
         if (is_array($id)) {
             foreach ($id as &$val) {
@@ -134,11 +164,130 @@ abstract class AbstractCollection
      */
     protected function prepareSet(array $set)
     {
-        if (array_key_exists('_id', $set) && $set['_id'] === null) {
-            unset($set['_id']);
+        if (array_key_exists('_id', $set)) {
+            if ($set['_id'] === null) {
+                unset($set['_id']);
+            } else {
+                $set['_id'] = $this->createIdentifier($set['_id']);
+            }
         }
 
         return $set;
+    }
+
+    /**
+     * @param array $set
+     * @param array $options
+     * @return \MongoId
+     */
+    public function insert(array $set, array $options = array())
+    {
+        $tmp = $this->prepareSet($set);
+        $this->getMongoCollection()->insert($tmp, $options);
+
+        return (string) $tmp['_id'];
+    }
+
+    /**
+     * @param ObjectInterface $object
+     * @param array $options
+     */
+    public function insertObject(ObjectInterface $object, array $options = array())
+    {
+        $set = $this->getHydrator()->extract($object);
+        $set['_id'] = $this->insert($set, $options);
+        $this->getHydrator()->hydrate($set, $object);
+    }
+
+    /**
+     * @param array $criteria
+     * @param array $set
+     * @param array $options
+     * @return bool
+     */
+    public function update(array $criteria, array $set, array $options = array())
+    {
+        $set = $this->prepareSet($set);
+
+        $this->getMongoCollection()->update($this->prepareCriteria($criteria), $set, $options);
+
+        return isset($set['_id']) ? (string) $set['_id'] : null;
+    }
+
+    /**
+     * @param ObjectInterface $object
+     * @param array $options
+     * @return bool
+     * @throws \InvalidArgumentException
+     */
+    public function updateObject(ObjectInterface $object, array $options = array())
+    {
+        if (!$object->getId()) {
+            if (isset($options['upsert']) && $options['upsert'] === true) {
+                $object->setId($this->createIdentifier());
+            } else {
+                throw new \InvalidArgumentException("\$object must provide a non-empty id if upsert is not enabled");
+            }
+        }
+
+        $set = $this->getHydrator()->extract($object);
+        $set['_id'] = $this->update(array('_id' => $object->getId()), $set, $options);
+        $this->getHydrator()->hydrate($set, $object);
+    }
+
+    /** @param array $set
+     * @param array $options
+     * @return array|bool
+     */
+    public function save(array $set, array $options = array())
+    {
+        $set = $this->prepareSet($set);
+        $this->getMongoCollection()->save($set, $options);
+
+        return isset($set['_id']) ? (string) $set['_id'] : null;
+    }
+
+    /**
+     * @param ObjectInterface $object
+     * @param array $options
+     * @return bool
+     */
+    public function saveObject(ObjectInterface $object, array $options = array())
+    {
+        $set = $this->getHydrator()->extract($object);
+        $set['_id'] = $this->save($set, $options);
+        $this->getHydrator()->hydrate($set, $object);
+    }
+
+    /**
+     * @param array $criteria
+     * @param array $options
+     * @return mixed
+     */
+    public function remove(array $criteria = array(), array $options = array())
+    {
+        return $this->getMongoCollection()->remove(
+            $this->prepareCriteria($criteria),
+            $options
+        );
+    }
+
+    /**
+     * @param ObjectInterface $object
+     * @param array $options
+     * @return mixed
+     * @throws \InvalidArgumentException
+     */
+    public function removeObject(ObjectInterface $object, array $options = array())
+    {
+        if (!$object->getId()) {
+            throw new \InvalidArgumentException("\$object must provide a non-empty id if upsert is not enabled");
+        }
+
+        return $this->remove(
+            array('_id' => $object->getId()),
+            $options
+        );
     }
 
     /**
@@ -147,7 +296,7 @@ abstract class AbstractCollection
      */
     public function count(array $criteria = array())
     {
-        return $this->collection->count(
+        return $this->getMongoCollection()->count(
             $this->prepareCriteria($criteria)
         );
     }
@@ -158,9 +307,9 @@ abstract class AbstractCollection
      * @param null $limit
      * @return \MongoCursor
      */
-    public function findRaw(array $criteria = array(), array $sort = null, $limit = null)
+    public function find(array $criteria = array(), array $sort = array(), $limit = null)
     {
-        $cursor = $this->collection->find(
+        $cursor = $this->getMongoCollection()->find(
             $this->prepareCriteria($criteria)
         );
 
@@ -183,139 +332,53 @@ abstract class AbstractCollection
      * @param null $limit
      * @return HydratingMongoCursor
      */
-    public function find(array $criteria = array(), array $sort = null, $limit = null)
+    public function findObjects(array $criteria = array(), array $sort = array(), $limit = null)
     {
-        return $this->getHydratingMongoCursor(
-            $this->findRaw($criteria, $sort, $limit)
-        );
+        $cursor = $this->find($criteria, $sort, $limit);
+
+        return $this->getHydratingMongoCursor($cursor);
     }
 
     /**
      * @param array $criteria
-     * @return AbstractObject|null
+     * @return array|null
      */
     public function findOne(array $criteria = array())
     {
-        $raw = $this->collection->findOne(
+        return $this->getMongoCollection()->findOne(
             $this->prepareCriteria($criteria)
         );
-
-        if (!$raw) {
-            return null;
-        }
-
-        $object = $this->createObject();
-        $this->getHydrator()->hydrate($raw, $object);
-
-        return $object;
-    }
-
-    /**
-     * @param array $set
-     * @return array|bool
-     */
-    public function insert(array $set)
-    {
-        return $this->collection->insert(
-            $this->prepareSet($set)
-        );
     }
 
     /**
      * @param array $criteria
-     * @param array $set
-     * @param array $options
-     * @return boolean
+     * @return ObjectInterface|null
      */
-    public function update(array $criteria, array $set, array $options = array())
+    public function findObject(array $criteria = array())
     {
-        return $this->collection->update(
-            $this->prepareCriteria($criteria),
-            $this->prepareSet($set),
-            $options
-        );
-    }
+        $raw = $this->findOne($criteria);
 
-    /**
-     * @param array $set
-     * @param array $options
-     * @return array|bool
-     */
-    public function save(array &$set, array $options = array())
-    {
-        // passing a referenced variable to save will fail in update the content
-        $tmp = $this->prepareSet($set);
-        $result = $this->getCollection()->save($tmp, $options);
-        $set = $tmp;
-
-        return $result;
-    }
-
-    /**
-     * @param AbstractObject $object
-     * @param array $options
-     * @return boolean
-     */
-    public function updateObject(AbstractObject $object, $options = array())
-    {
-        $set = $this->getHydrator()->extract($object);
-
-        $success = $this->save($set, $options);
-
-        $this->getHydrator()->hydrate($set, $object);
-
-        return $success;
-    }
-
-    /**
-     * @param array $criteria
-     * @param array $options
-     * @return mixed
-     */
-    public function remove(array $criteria = array(), array $options = array())
-    {
-        return $this->collection->remove(
-            $this->prepareCriteria($criteria),
-            $options
-        );
-    }
-
-    /**
-     * @return AbstractObject
-     */
-    abstract public function createObjectPrototype();
-
-    /**
-     * @return AbstractObject
-     */
-    public function createObject()
-    {
-        if ($this->objectPrototype === null) {
-            $this->objectPrototype = $this->createObjectPrototype();
-        }
-
-        return clone $this->objectPrototype;
-    }
-
-    /**
-     * @param array $data
-     * @return AbstractObject
-     */
-    public function createObjectFromRaw(array $data)
-    {
-        return $this->getHydrator()->hydrate(
-            $data,
-            $this->createObject()
-        );
+        return $raw ? $this->getHydrator()->hydrate($raw, $this->createObject()) : null;
     }
 
     /**
      * @param string|\MongoId $id
-     * @return AbstractObject|null
+     * @return array|null
      */
     public function findById($id)
     {
         return $this->findOne(array(
+            '_id' => $id
+        ));
+    }
+
+    /**
+     * @param string|\MongoId $id
+     * @return ObjectInterface|null
+     */
+    public function findObjectById($id)
+    {
+        return $this->findObject(array(
             '_id' => $id
         ));
     }
@@ -327,7 +390,7 @@ abstract class AbstractCollection
      */
     public function distinct($fieldName, $criteria = array())
     {
-        return $this->getCollection()->distinct(
+        return $this->getMongoCollection()->distinct(
             $fieldName,
             $this->prepareCriteria($criteria)
         );

@@ -1,4 +1,4 @@
-Mongo Virtual Collections 0.5.0
+Mongo Virtual Collections 0.6.0
 ===
 
 Zend Framework 2 Module for MongoDB operations abstraction and virtualization.

@@ -31,7 +31,37 @@ abstract class AbstractSupportCollection extends AbstractCollection implements S
     /**
      * @var array
      */
-    protected $virtualizationGroup = array();
+    protected $groupAliases = array();
+
+    /**
+     * @var AbstractSupportCollection
+     */
+    protected $parentSupportCollection;
+
+    /**
+     * @return bool
+     */
+    public function isVirtualizationGroup()
+    {
+        return $this->parentSupportCollection ? true : false;
+    }
+
+    /**
+     * @param array $aliases
+     * @return AbstractSupportCollection
+     */
+    public function createVirtualizationGroup(array $aliases)
+    {
+        $aliases = array_unique($aliases);
+        $aliases = array_combine($aliases, $aliases);
+
+        $virtualizaionGroup = clone $this;
+        $virtualizaionGroup->parentSupportCollection = $this;
+        $virtualizaionGroup->virtualCollections = array();
+        $virtualizaionGroup->groupAliases = $aliases;
+
+        return $virtualizaionGroup;
+    }
 
     /**
      * @return string
@@ -44,7 +74,7 @@ abstract class AbstractSupportCollection extends AbstractCollection implements S
     /**
      * @throws \Exception
      */
-    final public function createObjectPrototype()
+    final protected function createObjectPrototype()
     {
         throw new \Exception("Support collections should never define their own prototye");
     }
@@ -52,7 +82,7 @@ abstract class AbstractSupportCollection extends AbstractCollection implements S
     /**
      * @throws \Exception
      */
-    final public function getHydrator()
+    final protected function createHydrator()
     {
         throw new \Exception("Support collections should never define their own hydrator");
     }
@@ -88,8 +118,12 @@ abstract class AbstractSupportCollection extends AbstractCollection implements S
      */
     public function getRegisteredVirtualCollection($alias)
     {
-        if (!array_key_exists($alias, $this->virtualCollections)) {
+        if ($this->groupAliases && !array_key_exists($alias, $this->groupAliases)) {
             return null;
+        }
+
+        if (!array_key_exists($alias, $this->virtualCollections)) {
+            return $this->parentSupportCollection ? $this->parentSupportCollection->getRegisteredVirtualCollection($alias) : null;
         }
 
         if ($this->virtualCollections[$alias] instanceof AbstractVirtualCollection) {
@@ -112,22 +146,6 @@ abstract class AbstractSupportCollection extends AbstractCollection implements S
     }
 
     /**
-     * @return array
-     */
-    public function getVirtualizationGroup()
-    {
-        return $this->virtualizationGroup;
-    }
-
-    /**
-     * @param array $virtualizationGroup
-     */
-    public function setVirtualizationGroup(array $virtualizationGroup = array())
-    {
-        $this->virtualizationGroup = $virtualizationGroup;
-    }
-
-    /**
      * @param array $criteria
      * @return array
      */
@@ -135,13 +153,23 @@ abstract class AbstractSupportCollection extends AbstractCollection implements S
     {
         $criteria = parent::prepareCriteria($criteria);
 
-        if ($this->virtualizationGroup) {
+        if ($this->groupAliases) {
             $criteria[$this->getClassNameField()] = array(
-                '$in' => $this->virtualizationGroup
+                '$in' => $this->groupAliases
             );
         }
 
         return $criteria;
+    }
+
+    /**
+     * @param array $set
+     * @return void
+     * @throws \Exception
+     */
+    protected function prepareSet(array $set = array())
+    {
+        throw new \Exception("Support collection are not desined to perform write operation");
     }
 
     /**
@@ -153,10 +181,6 @@ abstract class AbstractSupportCollection extends AbstractCollection implements S
     {
         if (!array_key_exists(static::CLASS_NAME_FIELD, $raw)) {
             throw new RuntimeException("Raw data is missing the className field \"".static::CLASS_NAME_FIELD."\"");
-        }
-
-        if (!array_key_exists($raw[static::CLASS_NAME_FIELD], $this->virtualCollections)) {
-            throw new RuntimeException("Alias {$raw[static::CLASS_NAME_FIELD]} could not be resolved into a virtual collection");
         }
 
         $virtualCollection = $this->getRegisteredVirtualCollection($raw[static::CLASS_NAME_FIELD]);
@@ -172,11 +196,11 @@ abstract class AbstractSupportCollection extends AbstractCollection implements S
      * @param array $criteria
      * @return AbstractObject|null
      */
-    public function findOne(array $criteria = array())
+    public function findObject(array $criteria = array())
     {
         $criteria = $this->prepareCriteria($criteria);
 
-        $raw = $this->findRaw($criteria, null, 1)->current();
+        $raw = $this->findOne($criteria, array());
 
         if (!$raw) {
             return null;
@@ -191,9 +215,9 @@ abstract class AbstractSupportCollection extends AbstractCollection implements S
      * @param int $limit
      * @return HydratingMongoCursor
      */
-    public function find(array $criteria = array(), array $sort = null, $limit = null)
+    public function findObjects(array $criteria = array(), array $sort = array(), $limit = null)
     {
-        $cursor = $this->findRaw($criteria, $sort, $limit);
+        $cursor = $this->find($criteria, $sort, $limit);
 
         return new HydratingMongoCursor($cursor, $this);
     }

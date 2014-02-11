@@ -2,19 +2,14 @@
 
 namespace Mongovc\Model;
 
-use Zend\ServiceManager\ServiceLocatorAwareInterface;
-use Zend\ServiceManager\ServiceLocatorAwareTrait;
-use Zend\ServiceManager\ServiceLocatorInterface;
-use Zend\ServiceManager\ServiceManager;
 use ArrayAccess;
-use Countable;
 
 /**
  * Class AbstractAsset
  * @package MongovcTest\Model
  */
-abstract class AbstractObject implements Countable,
-                                         ArrayAccess
+abstract class AbstractObject implements ArrayAccess,
+                                         ObjectInterface
 {
     /**
      * @var AbstractCollection
@@ -43,6 +38,22 @@ abstract class AbstractObject implements Countable,
     {
         $this->collection = $collection;
         $this->initialize();
+    }
+
+    /**
+     * @return string
+     */
+    public function getId()
+    {
+        return $this->_id;
+    }
+
+    /**
+     * @param \MongoId|string $id
+     */
+    public function setId($id)
+    {
+        $this->_id = (string) $id;
     }
 
     /**
@@ -95,7 +106,7 @@ abstract class AbstractObject implements Countable,
      */
     public function save()
     {
-        $this->getCollection()->updateObject($this);
+        $this->getCollection()->saveObject($this);
     }
 
     /**
@@ -157,14 +168,6 @@ abstract class AbstractObject implements Countable,
     }
 
     /**
-     * @return int
-     */
-    public function count()
-    {
-        return count($this->schema);
-    }
-
-    /**
      * @return array
      */
     public function getArrayCopy()
@@ -193,10 +196,15 @@ abstract class AbstractObject implements Countable,
     public function populate(array $data)
     {
         foreach ($this->schema as $offset) {
-            $this->{$offset} = null;
+            $this->{$offset} = array_key_exists($offset, $data) ? $data[$offset] : null;
         }
 
-        return $this->enhance($data);
+        return $this;
+    }
+
+    public function exchangeArray(array $data)
+    {
+        return $this->populate($data);
     }
 
     /**

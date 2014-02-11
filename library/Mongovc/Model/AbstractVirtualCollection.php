@@ -28,8 +28,15 @@ abstract class AbstractVirtualCollection extends AbstractCollection
     public function __construct(AbstractSupportCollection $supportCollection)
     {
         $this->supportCollection = $supportCollection;
-        $this->collection = $this->supportCollection->getCollection();
         $this->supportCollection->registerVirtualCollection($this->getAlias(), $this);
+    }
+
+    /**
+     * @return \MongoCollection
+     */
+    public function getMongoCollection()
+    {
+        return $this->getSupportCollection()->getMongoCollection();
     }
 
     /**
@@ -43,7 +50,7 @@ abstract class AbstractVirtualCollection extends AbstractCollection
     /**
      * @return AbstractSupportCollection
      */
-    final public function getSupportCollection()
+    public function getSupportCollection()
     {
         return $this->supportCollection;
     }
@@ -51,9 +58,9 @@ abstract class AbstractVirtualCollection extends AbstractCollection
     /**
      * @return string
      */
-    final public function getClassNameField()
+    public function getClassNameField()
     {
-        return $this->getSupportCollection()->getClassNameField();
+        return $this->supportCollection->getClassNameField();
     }
 
     /**

@@ -1,0 +1,11 @@
+<?php
+
+return array(
+    'mongovc_tests' => array(
+        'driver' => array(
+            'hosts' => 'localhost:27017',
+            'database' => 'mongovc',
+            'options' => array()
+        )
+    ),
+);
