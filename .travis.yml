@@ -12,7 +12,7 @@ before_install:
  - composer install
 
 script:
- - ./vendor/bin/phpunit -c $PWD/test/phpunit.xml
+ - ./vendor/bin/phpunit -c $PWD/tests/phpunit.xml
 
 notifications:
   email: false
