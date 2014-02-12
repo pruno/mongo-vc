@@ -86,16 +86,16 @@ class ObjectTest extends AbstractTestCase
     {
         $id = new \MongoId();
 
-        $this->object->setId($id);
+        $this->object->setMongoId($id);
 
-        $this->assertTrue($this->object->getId() === $id || $this->object->getId() === (string) $id);
+        $this->assertTrue($this->object->getMongoId() === $id || $this->object->getMongoId() === (string) $id);
 
         $this->tearDown();
         $this->setUp();
 
-        $this->object->setId($id);
+        $this->object->setMongoId($id);
 
-        $this->assertTrue($this->object->getId() === $id || $this->object->getId() === (string) $id);
+        $this->assertTrue($this->object->getMongoId() === $id || $this->object->getMongoId() === (string) $id);
     }
 
     public function testArrayAccess()

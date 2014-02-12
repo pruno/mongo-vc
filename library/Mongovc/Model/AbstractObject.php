@@ -43,7 +43,7 @@ abstract class AbstractObject implements ArrayAccess,
     /**
      * @return string
      */
-    public function getId()
+    public function getMongoId()
     {
         return $this->_id;
     }
@@ -51,7 +51,7 @@ abstract class AbstractObject implements ArrayAccess,
     /**
      * @param \MongoId|string $id
      */
-    public function setId($id)
+    public function setMongoId($id)
     {
         $this->_id = (string) $id;
     }

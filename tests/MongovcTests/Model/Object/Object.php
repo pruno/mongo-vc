@@ -25,7 +25,7 @@ class Object implements ArraySerializableInterface,
     /**
      * @return string
      */
-    public function getId()
+    public function getMongoId()
     {
         return $this->_id;
     }
@@ -33,7 +33,7 @@ class Object implements ArraySerializableInterface,
     /**
      * @param \MongoId|string $id
      */
-    public function setId($id)
+    public function setMongoId($id)
     {
         $this->_id = (string) $id;
     }

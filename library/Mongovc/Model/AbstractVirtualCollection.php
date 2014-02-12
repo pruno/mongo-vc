@@ -87,4 +87,17 @@ abstract class AbstractVirtualCollection extends AbstractCollection
 
         return $set;
     }
+
+    /**
+     * @param array $set
+     * @return array
+     */
+    protected function undoSet(array $set)
+    {
+        if (array_key_exists($this->getClassNameField(), $set)) {
+            unset($set[$this->getClassNameField()]);
+        }
+
+        return $set;
+    }
 }

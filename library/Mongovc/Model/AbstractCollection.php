@@ -105,7 +105,7 @@ abstract class AbstractCollection
     public function createObjectFromRaw(array $data)
     {
         return $this->getHydrator()->hydrate(
-            $data,
+            $this->undoSet($data),
             $this->createObject()
         );
     }
@@ -177,6 +177,15 @@ abstract class AbstractCollection
 
     /**
      * @param array $set
+     * @return array
+     */
+    protected function undoSet(array $set)
+    {
+        return $set;
+    }
+
+    /**
+     * @param array $set
      * @param array $options
      * @return \MongoId
      */
@@ -222,16 +231,16 @@ abstract class AbstractCollection
      */
     public function updateObject(ObjectInterface $object, array $options = array())
     {
-        if (!$object->getId()) {
+        if (!$object->getMongoId()) {
             if (isset($options['upsert']) && $options['upsert'] === true) {
-                $object->setId($this->createIdentifier());
+                $object->setMongoId($this->createIdentifier());
             } else {
                 throw new \InvalidArgumentException("\$object must provide a non-empty id if upsert is not enabled");
             }
         }
 
         $set = $this->getHydrator()->extract($object);
-        $set['_id'] = $this->update(array('_id' => $object->getId()), $set, $options);
+        $set['_id'] = $this->update(array('_id' => $object->getMongoId()), $set, $options);
         $this->getHydrator()->hydrate($set, $object);
     }
 
@@ -280,12 +289,12 @@ abstract class AbstractCollection
      */
     public function removeObject(ObjectInterface $object, array $options = array())
     {
-        if (!$object->getId()) {
+        if (!$object->getMongoId()) {
             throw new \InvalidArgumentException("\$object must provide a non-empty id if upsert is not enabled");
         }
 
         return $this->remove(
-            array('_id' => $object->getId()),
+            array('_id' => $object->getMongoId()),
             $options
         );
     }
@@ -358,7 +367,7 @@ abstract class AbstractCollection
     {
         $raw = $this->findOne($criteria);
 
-        return $raw ? $this->getHydrator()->hydrate($raw, $this->createObject()) : null;
+        return $raw ? $this->getHydrator()->hydrate($this->undoSet($raw), $this->createObject()) : null;
     }
 
     /**

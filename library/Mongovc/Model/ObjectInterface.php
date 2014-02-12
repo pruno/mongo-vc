@@ -13,11 +13,11 @@ interface ObjectInterface extends ArraySerializableInterface
     /**
      * @return string|\MongoId
      */
-    public function getId();
+    public function getMongoId();
 
     /**
      * @param string|\MongoId $id
      * @return void
      */
-    public function setId($id);
+    public function setMongoId($id);
 }

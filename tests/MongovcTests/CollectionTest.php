@@ -50,7 +50,7 @@ class CollectionTest extends AbstractTestCase
     {
         $this->assertTrue($this->collection->createObject() instanceof AbstractObject);
         $this->assertTrue($this->collection->createObject() instanceof Foo);
-        $this->assertNull($this->collection->createObject()->getId());
+        $this->assertNull($this->collection->createObject()->getMongoId());
     }
 
     public function testCreateObjectFromRaw()
@@ -153,7 +153,7 @@ class CollectionTest extends AbstractTestCase
 
         $this->collection->insertObject($object);
 
-        $this->assertNotEmpty($object->getId());
+        $this->assertNotEmpty($object->getMongoId());
         $this->assertEquals($this->collection->getMongoCollection()->count(), 1);
 
         $this->collection->getMongoCollection()->drop();
@@ -162,11 +162,11 @@ class CollectionTest extends AbstractTestCase
         $_id = new \MongoId();
 
         $object = new Object();
-        $object->setId($_id);
+        $object->setMongoId($_id);
 
         $this->collection->insertObject($object);
 
-        $this->assertEquals($object->getId(), (string) $_id);
+        $this->assertEquals($object->getMongoId(), (string) $_id);
         $this->assertEquals($this->collection->getMongoCollection()->count(), 1);
 
         $this->collection->getMongoCollection()->drop();
@@ -175,11 +175,11 @@ class CollectionTest extends AbstractTestCase
         $_id = new \MongoId();
 
         $object = new Object();
-        $object->setId((string) $_id);
+        $object->setMongoId((string) $_id);
 
         $this->collection->insertObject($object);
 
-        $this->assertEquals($object->getId(), (string) $_id);
+        $this->assertEquals($object->getMongoId(), (string) $_id);
         $this->assertEquals($this->collection->getMongoCollection()->count(), 1);
     }
 
@@ -234,7 +234,7 @@ class CollectionTest extends AbstractTestCase
 
         $this->collection->updateObject($objectNull, array('upsert' => true));
 
-        $this->assertString($objectNull->getId());
+        $this->assertString($objectNull->getMongoId());
     }
 
     public function testSave()
@@ -272,7 +272,7 @@ class CollectionTest extends AbstractTestCase
 
         $this->collection->saveObject($object);
 
-        $this->assertEquals($object->getId(), $objectCpy->getId());
+        $this->assertEquals($object->getMongoId(), $objectCpy->getMongoId());
         $this->assertEquals($this->collection->getMongoCollection()->count(), 1);
     }
 
@@ -411,7 +411,7 @@ class CollectionTest extends AbstractTestCase
         $object2 = $this->collection->findObject();
 
         $this->assertTrue($object2 instanceof Foo);
-        $this->assertEquals($object->getId(), $object2->getId());
+        $this->assertEquals($object->getMongoId(), $object2->getMongoId());
     }
 
     public function testFindById()

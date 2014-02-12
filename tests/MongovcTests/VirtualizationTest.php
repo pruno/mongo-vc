@@ -132,7 +132,7 @@ class VirtualizationTest extends AbstractTestCase
         $object = new Object();
         $this->fooCollection->insertObject($object);
 
-        $this->assertNotNull($object->getId());
+        $this->assertNotNull($object->getMongoId());
     }
 
     public function testUpdate()
@@ -169,7 +169,7 @@ class VirtualizationTest extends AbstractTestCase
         $object = new Object();
         $this->fooCollection->updateObject($object, array('upsert' => true));
 
-        $this->assertNotNull($object->getId());
+        $this->assertNotNull($object->getMongoId());
     }
 
     public function testFind()
