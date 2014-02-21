@@ -297,4 +297,17 @@ class VirtualizationTest extends AbstractTestCase
         $this->assertTrue($this->fooCollection->findObjectById($idFoo) instanceof Foo);
         $this->assertNull($this->fooCollection->findObjectById($idBar));
     }
+
+    /**
+     * @see https://github.com/pruno/mongo-vc/issues/11
+     */
+    public function testIssue11()
+    {
+        $issue11Collection = new Issue11Collection($this->collection);
+
+        $object = $issue11Collection->createObject();
+        $object->save();
+
+        $object2 = $issue11Collection->findObjectById($object->getMongoId());
+    }
 }
