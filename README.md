@@ -66,13 +66,13 @@ Add the following to your `composer.json` file:
         ...
         {
             "type": "vcs",
-            "url": "https://github.com/pruno/ZF2-MongoDB-VirtualCollections.git"
+            "url": "https://github.com/pruno/mongo-vc.git"
         }
     ]
 
 Alternately with git submodules:
 
-    git submodule add https://github.com/pruno/ZF2-MongoDB-VirtualCollections.git pruno/ZF2-MongoDB-VirtualCollections
+    git submodule add https://github.com/pruno/mongo-vc.git pruno/mongo-vc
 
  
 How To's
